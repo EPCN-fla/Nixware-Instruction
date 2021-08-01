@@ -4,7 +4,7 @@ This is an instruction of nixware[beta] mainly for Chinese User.
 
 # What Can You Find In This Repository
 * Basic instructions of nixware[beta] itself
-* Extensions of nixware[beta] and usages of them
+* Extensions of nixware[beta] and usages and some tips of them
 * Other miscellaneous things
 
 # Detailed Instruction
