@@ -9,7 +9,7 @@ This is an instruction of nixware[beta] mainly for Chinese User.
 
 # Detailed Instruction
 
-**[Click here](https://github.com/EPCN-fla/Nixware-Instruction/wiki/Nixware-Instruction) to go to the Wiki page to view detailed instruction on nixware[beta].**
+**[Click here](https://github.com/EPCN-fla/Nixware-Instruction/wiki/%5BEN%5D-Nixware-Instruction) to go to the Wiki page to view detailed instruction on nixware[beta].**
 
 # Contributors
 **[Fla1337](https://github.com/EPCN-fla)**
