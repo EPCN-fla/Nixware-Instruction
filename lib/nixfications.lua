@@ -1,15 +1,9 @@
 local notify = { }
 notify.__index = notify
-
-local keys = 
-{
-    dpi_scaling = ui.get_combo_box( "misc_ui_scale" )
-}
-
 local screen_size = engine.get_screen_size( )
 local scrx, scry = screen_size.x, screen_size.y
 local scaling = { [0] = 1.0, [1] = 1.5, [2] = 2.0 }
-local dpi_scaling = scaling[math.min( 2, keys.dpi_scaling:get_value( ) )]
+local dpi_scaling = 1.5
 
 local fonts =
 {
@@ -174,8 +168,8 @@ function notify.invoke_callback(timeout)
 end
 
 function notify.setup_color( color, sec_color ) --tip_color, box_color
-    local dpi = math.min( 2, keys.dpi_scaling:get_value( ) )
-    dpi_scaling = scaling[dpi]
+    local dpi = 1
+    dpi_scaling = 1.5
 
     notify.color[1] = color 
     if sec_color ~= nil 
