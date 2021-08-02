@@ -1,1 +1,0 @@
-se.get_convar("@panorama_disable_blur"):set_int(1)
