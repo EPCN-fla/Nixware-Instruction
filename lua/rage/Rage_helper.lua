@@ -8,31 +8,31 @@
 
 require 'AdvancedAPI'
 
-local lua_re_ragelogs = ui.add_check_box("Rage logs", "lua_re_ragelogs", false)	
-local lua_re_votelogs = ui.add_check_box("Vote logs", "lua_re_votelogs", false)
-local lua_re_buylogs = ui.add_check_box("Buy logs", "lua_re_buylogs", false)
+local lua_re_ragelogs = ui.add_check_box("Rage Logs", "lua_re_ragelogs", false)	
+local lua_re_votelogs = ui.add_check_box("Vote Logs", "lua_re_votelogs", false)
+local lua_re_buylogs = ui.add_check_box("Buy Logs", "lua_re_buylogs", false)
 
 local lua_re_autopeek = ui.add_key_bind("Autopeek", "lua_re_autopeek", 0, 1)
-local lua_re_autopeek_circle = ui.add_color_edit("Autopeek circle", "lua_re_autopeek_circle", true, color_t.new(79, 79, 79, 255))
+local lua_re_autopeek_circle = ui.add_color_edit("Autopeek Circle", "lua_re_autopeek_circle", true, color_t.new(79, 79, 79, 255))
 
-local scale_thirdperson = ui.add_check_box("Thirdperson distance", "scale_thirdperson", false)
-local thirdperson_scale = ui.add_slider_int("Thirdperson scale", "thirdperson_scale", 65, 200, 120)
+local scale_thirdperson = ui.add_check_box("Thirdperson Distance", "scale_thirdperson", false)
+local thirdperson_scale = ui.add_slider_int("Thirdperson Scale", "thirdperson_scale", 65, 200, 120)
 
-local lua_re_onlyhead_bind = ui.add_key_bind("Only head", "lua_re_onlyhead_bind", 0, 2)
+local lua_re_onlyhead_bind = ui.add_key_bind("Only Head", "lua_re_onlyhead_bind", 0, 2)
 local lua_re_baim_bind = ui.add_key_bind("Force BAIM", "lua_re_baim_bind", 0, 2)
-local lua_re_laim_bind = ui.add_key_bind("Wash legs", "lua_re_laim_bind", 0, 2)
-local lua_re_safepoints_bind = ui.add_key_bind("Force safepoints", "lua_re_safepoints_bind", 0, 2)
-local lua_re_lethal_bind = ui.add_key_bind("Force lethal shots", "lua_re_lethal_bind", 0, 2)
-local lua_re_pingspike_bind = ui.add_key_bind("Ping spike", "lua_re_pingspike_bind", 0, 2)
-local lua_re_resolver_override_bind = ui.add_key_bind("Disable resolver", "lua_re_resolver_override_bind", 0, 2)
+local lua_re_laim_bind = ui.add_key_bind("Wash Legs", "lua_re_laim_bind", 0, 2)
+local lua_re_safepoints_bind = ui.add_key_bind("Force Safepoints", "lua_re_safepoints_bind", 0, 2)
+local lua_re_lethal_bind = ui.add_key_bind("Force Lethal Shots", "lua_re_lethal_bind", 0, 2)
+local lua_re_pingspike_bind = ui.add_key_bind("Ping Spike", "lua_re_pingspike_bind", 0, 2)
+local lua_re_resolver_override_bind = ui.add_key_bind("Disable Resolver", "lua_re_resolver_override_bind", 0, 2)
 
 local lua_re_mindmg_bind = ui.add_key_bind("Damage Override", "lua_re_mindmg_bind", 0, 2)
-local lua_re_mindmg = ui.add_slider_int("Override value", "lua_re_mindmg", 0, 100, 0)
+local lua_re_mindmg = ui.add_slider_int("Override Value", "lua_re_mindmg", 0, 100, 0)
 
-local lua_re_switchexploit = ui.add_key_bind("Switch exploit", "lua_re_switchexploit", 0, 1)
+local lua_re_switchexploit = ui.add_key_bind("Switch Exploit", "lua_re_switchexploit", 0, 1)
 
 local lua_re_bt = ui.add_slider_float("Backtrack", "lua_re_bt", 0, 0.2, 0)
-local lua_re_bt_onxploit = ui.add_slider_float("Backtrack on exploit", "lua_re_bt_onxploit", 0, 0.2, 0)
+local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_bt_onxploit", 0, 0.2, 0)
 
 local lua_re_jumpscout = ui.add_key_bind("Jumpscout", "lua_re_jumpscout", 0, 2)
 local lua_re_jumpscout_hitboxes = ui.add_multi_combo_box("Jumpscout hitboxes", "lua_re_jumpscout_hitboxes", { "head", "chest", "pelvis", "stomach", "legs", "foot" }, { false, false, false, false, false, false })
@@ -63,7 +63,7 @@ local screen = engine.get_screen_size()
 
 local indicators_switch = ui.add_check_box("Indicators", "indicators_switch", false)
 local x_slider = ui.add_slider_int('Indicators position x', 'og_indicators_pos_x', 0, screen.x, 10)
-local y_slider = ui.add_slider_int('Indicators position y', 'og_indicators_pos_y', 0, screen.y, 230)
+local y_slider = ui.add_slider_int('Indicators position y', 'og_indicators_pos_y', 0, screen.y, 260)
 
 local fonts = {
     verdana = renderer.setup_font('c:/windows/fonts/verdana.ttf', 12, 0),
@@ -152,13 +152,14 @@ local rage_active_exploit = ui.get_combo_box('rage_active_exploit')
 local antihit_extra_fakeduck_bind = ui.get_key_bind('antihit_extra_fakeduck_bind')
 
 -- Hitlist
+local screensize = engine.get_screen_size()
 
 local hitlist_switch = ui.add_check_box("Hitlist", "hitlist_switch", false)
 local color_hitlist = ui.add_color_edit("line color", "color_hitlist", true, color_t.new(0,70,140,255))
 local style = ui.add_combo_box("hitlist style", "style", {"super minimal", "informative"}, 0)
 local hitlog_clear = ui.add_check_box("Hitlist clear table", "hitlog_clear", false)
-local hitlog_pos_x = ui.add_slider_int("Hitlist position x", "hitlog_pos_x", 0, screen.x, 0)
-local hitlog_pos_y = ui.add_slider_int("Hitlist position y", "hitlog_pos_y", 0, screen.y, 0)
+local hitlog_pos_x = ui.add_slider_int("Hitlist position x", "hitlog_pos_x", 0, screensize.x, 0)
+local hitlog_pos_y = ui.add_slider_int("Hitlist position y", "hitlog_pos_y", 0, screensize.y, 0)
 
 local utils = {
     to_rgba = function (params)
@@ -223,35 +224,6 @@ local function get_hitgroup(index)
     end
  
     return "body"
-end
-
-local function hitlist(shot)
-    if shot.manual then
-        return
-    end    
-
-    local client_hitbox = hitboxes_hit[shot.hitbox + 1]
-    local server_hit = shot.server_damage > 0 and get_hitgroup(shot.server_hitgroup) or "-"
-
-    for i = 8, 2, -1 do
-        hitlog[i] = hitlog[i-1]
-    end
-
-    id = id + 1
-
-    hitlog[1] = {
-        ["id"] = id,
-        ["player"] = string.sub(engine.get_player_info(shot.target:get_prop_int(0x64)).name, 0, 14),
-        ["client_damage"] = shot.client_damage,
-        ["server_damage"] = shot.server_damage,
-        ["HPrem"] = shot.target:get_prop_int(m_iHealth),
-        ["client_hitbox"] = client_hitbox,
-        ["server_hit"] = server_hit,
-        ["hitchance"] = shot.hitchance,
-        ["safepoint"] = shot.safe_point,
-        ["result"] = shot.result,
-        ["backtrack"] = shot.backtrack,
-    }
 end
 
 --
@@ -886,6 +858,35 @@ function on_shot_fired(shot_info)
 			client.notify("[Rage] Missed shot due to " .. shot_info.result .. " into " .. hitboxes[shot_info.hitbox + 1] .." (hitchance " .. tostring(shot_info.hitchance) .."%) (bt for " .. tostring(shot_info.backtrack) .. " ticks).")
 		end
 	end
+end
+
+local function hitlist(shot)
+	if shot.manual then
+        return
+    end    
+
+    local client_hitbox = hitboxes_hit[shot.hitbox + 1]
+    local server_hit = shot.server_damage > 0 and get_hitgroup(shot.server_hitgroup) or "-"
+
+    for i = 8, 2, -1 do
+        hitlog[i] = hitlog[i-1]
+    end
+
+    id = id + 1
+
+    hitlog[1] = {
+        ["id"] = id,
+        ["player"] = string.sub(engine.get_player_info(shot.target:get_prop_int(0x64)).name, 0, 14),
+        ["client_damage"] = shot.client_damage,
+        ["server_damage"] = shot.server_damage,
+        ["HPrem"] = shot.target:get_prop_int(m_iHealth),
+        ["client_hitbox"] = client_hitbox,
+        ["server_hit"] = server_hit,
+        ["hitchance"] = shot.hitchance,
+        ["safepoint"] = shot.safe_point,
+        ["result"] = shot.result,
+        ["backtrack"] = shot.backtrack,
+    }
 end
 
 local function on_unload()
