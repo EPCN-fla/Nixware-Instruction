@@ -170,7 +170,7 @@ local SCAN_FOOT = 5
 
 local lua_re_menu = ui.add_combo_box("Menu", "lua_menu", { "Rage", "DT/HS/FL/FD", "Visuals" }, 0)
 
-local lua_re_ragelogs = ui.add_check_box("Rage Logs", "lua_re_ragelogs", false)	
+local lua_re_ragelogs = ui.add_check_box("Rage Logs", "lua_re_ragelogs", false)
 local lua_re_votelogs = ui.add_check_box("Vote Logs", "lua_re_votelogs", false)
 local lua_re_buylogs = ui.add_check_box("Buy Logs", "lua_re_buylogs", false)
 
@@ -197,11 +197,6 @@ local lua_re_switchexploit = ui.add_key_bind("Switch Exploit", "lua_re_switchexp
 local lua_re_bt = ui.add_slider_float("Backtrack", "lua_re_bt", 0, 0.2, 0)
 local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_bt_onxploit", 0, 0.2, 0)
 
-local lua_re_jumpscout = ui.add_key_bind("Jumpscout", "lua_re_jumpscout", 0, 2)
-local lua_re_jumpscout_hitboxes = ui.add_multi_combo_box("Jumpscout hitboxes", "lua_re_jumpscout_hitboxes", { "head", "chest", "pelvis", "stomach", "legs", "foot" }, { false, false, false, false, false, false })
-local lua_re_jumpscout_hc = ui.add_slider_int("Jumpscout hitchance", "lua_re_jumpscout_hc", 0, 100, 0)
-local lua_re_jumpscout_dmg = ui.add_slider_int("Jumpscout damage", "lua_re_jumpscout_dmg", 0, 101, 0)
-
 
 -- Rage
 
@@ -215,8 +210,6 @@ local lua_re_jumpscout_dmg = ui.add_slider_int("Jumpscout damage", "lua_re_jumps
 	local autopeek_last_shot = 0
 
 	local once_thirdperson = false
-
-	local jumpscout_hc = ui.get_slider_int("rage_scout_hitchance"):get_value()
 
 	local vote_options = {}
 
@@ -380,29 +373,6 @@ local lua_re_jumpscout_dmg = ui.add_slider_int("Jumpscout damage", "lua_re_jumps
 		end
 	end
 
-	local function jump_scout()
-		local entity = entitylist.get_players(0)
-		if lua_re_jumpscout:is_active() then
-			ui.get_check_box("misc_autostrafer"):set_value(false)
-			ui.get_slider_int("rage_scout_hitchance"):set_value(lua_re_jumpscout_hc:get_value())
-			for i = 1, #entity do
-				local player = entity[i]
-
-				ragebot.override_hitscan(player:get_index(), SCAN_HEAD, lua_re_jumpscout_hitboxes:get_value(SCAN_HEAD))
-				ragebot.override_hitscan(player:get_index(), SCAN_CHEST, lua_re_jumpscout_hitboxes:get_value(SCAN_CHEST))
-				ragebot.override_hitscan(player:get_index(), SCAN_PELVIS, lua_re_jumpscout_hitboxes:get_value(SCAN_PELVIS))
-				ragebot.override_hitscan(player:get_index(), SCAN_STOMACH, lua_re_jumpscout_hitboxes:get_value(SCAN_STOMACH))
-				ragebot.override_hitscan(player:get_index(), SCAN_LEGS, lua_re_jumpscout_hitboxes:get_value(SCAN_LEGS))
-				ragebot.override_hitscan(player:get_index(), SCAN_FOOT, lua_re_jumpscout_hitboxes:get_value(SCAN_FOOT))
-				
-				ragebot.override_min_damage(player:get_index(), lua_re_jumpscout_dmg:get_value())
-			end
-		else
-			ui.get_check_box("misc_autostrafer"):set_value(true)
-			ui.get_slider_int("rage_scout_hitchance"):set_value(jumpscout_hc)
-		end
-	end
-
 	local function on_events(event)
 		if event:get_name() == "vote_cast" then
 			if lua_re_votelogs:get_value() == true then
@@ -491,7 +461,6 @@ local lua_re_jumpscout_dmg = ui.add_slider_int("Jumpscout damage", "lua_re_jumps
 		autopeek(cmd)
 		switch_exploit()
 		backtracking()
-		jump_scout()
 	end
 
 	local function on_shot_fired(shot_info) 
@@ -508,7 +477,6 @@ local lua_re_jumpscout_dmg = ui.add_slider_int("Jumpscout damage", "lua_re_jumps
 	local function on_unload()
 		sv_maxunlag:set_float(sv_maxunlag_original)
 		ui.get_check_box("misc_autostrafer"):set_value(true)
-		ui.get_slider_int("rage_scout_hitchance"):set_value(jumpscout_hc)
 	end
 	
 	client.register_callback("unload", on_unload)
@@ -522,14 +490,18 @@ local lua_re_jumpscout_dmg = ui.add_slider_int("Jumpscout damage", "lua_re_jumps
 rage_active_exploit = ui.get_combo_box("rage_active_exploit")
 antihit_extra_fakeduck_bind = ui.get_key_bind("antihit_extra_fakeduck_bind")
 rage_active_exploit_bind = ui.get_key_bind("rage_active_exploit_bind")
+local lua_re_weaponconfig = ui.add_combo_box("Weapon Configs","lua_weaponconfig", {"Auto", "Scout", "Pistols", "Deagle"}, 0)
 
-local scar_hitscan_hs = ui.add_multi_combo_box('Auto HS/FL Hitscan', 'scar_hitscan_hs', hitscan, { false, false, false, false, false, false })
+
+--Auto
+local scar_enable = ui.add_check_box("Enable Superior Auto", "scar_enable", false)
+local scar_hitscan_hs = ui.add_multi_combo_box('Auto HS/FL/FD Hitscan', 'scar_hitscan_hs', hitscan, { false, false, false, false, false, false })
 local scar_hitscan_noscope_dt = ui.add_multi_combo_box('Auto DT NoScope Hitscan', 'scar_hitscan_noscope_dt', hitscan, { false, false, false, false, false, false })
 local scar_hitscan_dt = ui.add_multi_combo_box('Auto DT Hitscan', 'scar_hitscan_dt', hitscan, { false, false, false, false, false, false })
-local scar_safepoint_hs = ui.add_combo_box('Auto HS/FL Safepoints', 'scar_safepoint_hs', {'default', 'prefer', 'force'}, 0)
-local scar_headscale_hs = ui.add_slider_int('Auto HS/FL Head Scale', 'scar_headscale_hs', 0, 100, 0)
-local scar_bodyscale_hs = ui.add_slider_int('Auto HS/FL Body Scale', 'scar_bodyscale_hs', 0, 100, 0)
-local scar_hitchance_hs = ui.add_slider_int('Auto HS/FL HitChance', 'scar_hitchance_hs', 0, 100, 0)
+local scar_safepoint_hs = ui.add_combo_box('Auto HS/FL/FD Safepoints', 'scar_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+local scar_headscale_hs = ui.add_slider_int('Auto HS/FL/FD Head Scale', 'scar_headscale_hs', 0, 100, 0)
+local scar_bodyscale_hs = ui.add_slider_int('Auto HS/FL/FD Body Scale', 'scar_bodyscale_hs', 0, 100, 0)
+local scar_hitchance_hs = ui.add_slider_int('Auto HS/FL/FD HitChance', 'scar_hitchance_hs', 0, 100, 0)
 local scar_safepoint_noscope_dt = ui.add_combo_box('Auto DT NoScope Safepoints', 'scar_safepoint_noscope_dt', {'default', 'prefer', 'force'}, 0)
 local scar_headscale_noscope_dt = ui.add_slider_int('Auto DT NoScope Head Scale', 'scar_headscale_noscope_dt', 0, 100, 0)
 local scar_bodyscale_noscope_dt = ui.add_slider_int('Auto DT NoScope Body Scale', 'scar_bodyscale_noscope_dt', 0, 100, 0)
@@ -546,61 +518,665 @@ local auto_sp = ui.get_combo_box("rage_auto_safepoints")
 local auto_hitchance = ui.get_slider_int("rage_auto_hitchance")
 local auto_autoscope = ui.get_check_box("rage_auto_autoscope")
 
-local function scar_override()   
-    local player = entitylist.get_local_player()
-    local is_scoped = player:get_prop_bool( se.get_netvar( "DT_CSPlayer", "m_bIsScoped" ) )
+local auto_hitscan_backup ={}
+auto_head_backup = auto_head:get_value()
+auto_body_backup = auto_body:get_value()
+auto_sp_backup = auto_sp:get_value()
+auto_hitchance_backup = auto_hitchance:get_value()
+auto_autoscope_backup = auto_autoscope:get_value()
+for i = 0, #hitscan - 1 do
+	auto_hitscan_backup[i] = auto_hitscan:get_value(i)
+end
 
-    if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and not is_scoped then
-        auto_head:set_value(scar_headscale_noscope_dt:get_value())
-        auto_body:set_value(scar_bodyscale_noscope_dt:get_value())
-        auto_sp:set_value(scar_safepoint_noscope_dt:get_value())
-        auto_hitchance:set_value(scar_hitchance_noscope_dt:get_value())
-        auto_autoscope:set_value(false)
-    elseif rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and is_scoped then
-        auto_head:set_value(scar_headscale_dt:get_value())
-        auto_body:set_value(scar_bodyscale_dt:get_value())
-        auto_sp:set_value(scar_safepoint_dt:get_value())
-        auto_hitchance:set_value(scar_hitchance_dt:get_value())
-        auto_autoscope:set_value(false)
-    elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
-        auto_head:set_value(scar_headscale_hs:get_value())
-        auto_body:set_value(scar_bodyscale_hs:get_value())
-        auto_sp:set_value(scar_safepoint_hs:get_value())
-        auto_hitchance:set_value(scar_hitchance_hs:get_value())
-        auto_autoscope:set_value(true)
-    elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
-        auto_head:set_value(scar_headscale_hs:get_value())
-        auto_body:set_value(scar_bodyscale_hs:get_value())
-        auto_sp:set_value(scar_safepoint_hs:get_value())
-        auto_hitchance:set_value(scar_hitchance_hs:get_value())
-        auto_autoscope:set_value(true)
-    elseif antihit_extra_fakeduck_bind:is_active() then
-        auto_head:set_value(scar_headscale_hs:get_value())
-        auto_body:set_value(scar_bodyscale_hs:get_value())
-        auto_sp:set_value(scar_safepoint_hs:get_value())
-        auto_hitchance:set_value(scar_hitchance_hs:get_value())
-        auto_autoscope:set_value(true)
-    end
+--Scout
+local scout_enable = ui.add_check_box("Enable Superior Scout", "scout_enable", false)
+local scout_hitscan_hs = ui.add_multi_combo_box('Scout HS/FL/FD Hitscan', 'scout_hitscan_hs', hitscan, { false, false, false, false, false, false })
+local scout_hitscan_noscope_dt = ui.add_multi_combo_box('Scout DT NoScope Hitscan', 'scout_hitscan_noscope_dt', hitscan, { false, false, false, false, false, false })
+local scout_hitscan_dt = ui.add_multi_combo_box('Scout DT Hitscan', 'scout_hitscan_dt', hitscan, { false, false, false, false, false, false })
+local scout_safepoint_hs = ui.add_combo_box('Scout HS/FL/FD Safepoints', 'scout_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+local scout_headscale_hs = ui.add_slider_int('Scout HS/FL/FD Head Scale', 'scout_headscale_hs', 0, 100, 0)
+local scout_bodyscale_hs = ui.add_slider_int('Scout HS/FL/FD Body Scale', 'scout_bodyscale_hs', 0, 100, 0)
+local scout_hitchance_hs = ui.add_slider_int('Scout HS/FL/FD HitChance', 'scout_hitchance_hs', 0, 100, 0)
+local scout_safepoint_noscope_dt = ui.add_combo_box('Scout DT NoScope Safepoints', 'scout_safepoint_noscope_dt', {'default', 'prefer', 'force'}, 0)
+local scout_headscale_noscope_dt = ui.add_slider_int('Scout DT NoScope Head Scale', 'scout_headscale_noscope_dt', 0, 100, 0)
+local scout_bodyscale_noscope_dt = ui.add_slider_int('Scout DT NoScope Body Scale', 'scout_bodyscale_noscope_dt', 0, 100, 0)
+local scout_hitchance_noscope_dt = ui.add_slider_int('Scout DT NoScope HitChance', 'scout_hitchance_noscope_dt', 0, 100, 0)
+local scout_safepoint_dt = ui.add_combo_box('Scout DT Safepoints', 'scout_safepoint_dt', {'default', 'prefer', 'force'}, 0)
+local scout_headscale_dt = ui.add_slider_int('Scout DT Head Scale', 'scout_headscale_dt', 0, 100, 0)
+local scout_bodyscale_dt = ui.add_slider_int('Scout DT Body Scale', 'scout_bodyscale_dt', 0, 100, 0)
+local scout_hitchance_dt = ui.add_slider_int('Scout DT HitChance', 'scout_hitchance_dt', 0, 100, 0)
+
+local scout_hitscan = ui.get_multi_combo_box("rage_scout_hitscan")
+local scout_head = ui.get_slider_int("rage_scout_head_pointscale") 
+local scout_body = ui.get_slider_int("rage_scout_body_pointscale")
+local scout_sp = ui.get_combo_box("rage_scout_safepoints")
+local scout_hitchance = ui.get_slider_int("rage_scout_hitchance")
+local scout_autoscope = ui.get_check_box("rage_scout_autoscope")
+
+local scout_hitscan_backup ={}
+scout_head_backup = scout_head:get_value()
+scout_body_backup = scout_body:get_value()
+scout_sp_backup = scout_sp:get_value()
+scout_hitchance_backup = scout_hitchance:get_value()
+scout_autoscope_backup = scout_autoscope:get_value()
+for i = 0, #hitscan - 1 do
+	scout_hitscan_backup[i] = scout_hitscan:get_value(i)
+end
+
+--Pistols
+local pistols_enable = ui.add_check_box("Enable Superior Pistols", "pistols_enable", false)
+local pistols_hitscan_hs = ui.add_multi_combo_box('Pistols HS/FL/FD Hitscan', 'pistols_hitscan_hs', hitscan, { false, false, false, false, false, false })
+local pistols_hitscan_dt = ui.add_multi_combo_box('Pistols DT Hitscan', 'pistols_hitscan_dt', hitscan, { false, false, false, false, false, false })
+local pistols_safepoint_hs = ui.add_combo_box('Pistols HS/FL/FD Safepoints', 'pistols_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+local pistols_headscale_hs = ui.add_slider_int('Pistols HS/FL/FD Head Scale', 'pistols_headscale_hs', 0, 100, 0)
+local pistols_bodyscale_hs = ui.add_slider_int('Pistols HS/FL/FD Body Scale', 'pistols_bodyscale_hs', 0, 100, 0)
+local pistols_hitchance_hs = ui.add_slider_int('Pistols HS/FL/FD HitChance', 'pistols_hitchance_hs', 0, 100, 0)
+local pistols_safepoint_dt = ui.add_combo_box('Pistols DT Safepoints', 'pistols_safepoint_dt', {'default', 'prefer', 'force'}, 0)
+local pistols_headscale_dt = ui.add_slider_int('Pistols DT Head Scale', 'pistols_headscale_dt', 0, 100, 0)
+local pistols_bodyscale_dt = ui.add_slider_int('Pistols DT Body Scale', 'pistols_bodyscale_dt', 0, 100, 0)
+local pistols_hitchance_dt = ui.add_slider_int('Pistols DT HitChance', 'pistols_hitchance_dt', 0, 100, 0)
+
+local pistols_hitscan = ui.get_multi_combo_box("rage_pistols_hitscan")
+local pistols_head = ui.get_slider_int("rage_pistols_head_pointscale")
+local pistols_body = ui.get_slider_int("rage_pistols_body_pointscale")
+local pistols_sp = ui.get_combo_box("rage_pistols_safepoints")
+local pistols_hitchance = ui.get_slider_int("rage_pistols_hitchance")
+
+pistols_hitscan_backup ={}
+pistols_head_backup = pistols_head:get_value()
+pistols_body_backup = pistols_body:get_value()
+pistols_sp_backup = pistols_sp:get_value()
+pistols_hitchance_backup = pistols_hitchance:get_value()
+for i = 0, #hitscan - 1 do
+	pistols_hitscan_backup[i] = pistols_hitscan:get_value(i)
+end
+
+--Deagle
+local deagle_enable = ui.add_check_box("Enable Superior Deagle", "deagle_enable", false)
+local deagle_hitscan_hs = ui.add_multi_combo_box('Deagle HS/FL/FD Hitscan', 'deagle_hitscan_hs', hitscan, { false, false, false, false, false, false })
+local deagle_hitscan_dt = ui.add_multi_combo_box('Deagle DT Hitscan', 'deagle_hitscan_dt', hitscan, { false, false, false, false, false, false })
+local deagle_safepoint_hs = ui.add_combo_box('Deagle HS/FL/FD Safepoints', 'deagle_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+local deagle_headscale_hs = ui.add_slider_int('Deagle HS/FL/FD Head Scale', 'deagle_headscale_hs', 0, 100, 0)
+local deagle_bodyscale_hs = ui.add_slider_int('Deagle HS/FL/FD Body Scale', 'deagle_bodyscale_hs', 0, 100, 0)
+local deagle_hitchance_hs = ui.add_slider_int('Deagle HS/FL/FD HitChance', 'deagle_hitchance_hs', 0, 100, 0)
+local deagle_safepoint_dt = ui.add_combo_box('Deagle DT Safepoints', 'deagle_safepoint_dt', {'default', 'prefer', 'force'}, 0)
+local deagle_headscale_dt = ui.add_slider_int('Deagle DT Head Scale', 'deagle_headscale_dt', 0, 100, 0)
+local deagle_bodyscale_dt = ui.add_slider_int('Deagle DT Body Scale', 'deagle_bodyscale_dt', 0, 100, 0)
+local deagle_hitchance_dt = ui.add_slider_int('Deagle DT HitChance', 'deagle_hitchance_dt', 0, 100, 0)
+
+local deagle_hitscan = ui.get_multi_combo_box("rage_deagle_hitscan")
+local deagle_head = ui.get_slider_int("rage_deagle_head_pointscale")
+local deagle_body = ui.get_slider_int("rage_deagle_body_pointscale")
+local deagle_sp = ui.get_combo_box("rage_deagle_safepoints")
+local deagle_hitchance = ui.get_slider_int("rage_deagle_hitchance")
+
+local deagle_hitscan_backup ={}
+deagle_head_backup = deagle_head:get_value()
+deagle_body_backup = deagle_body:get_value()
+deagle_sp_backup = deagle_sp:get_value()
+deagle_hitchance_backup = deagle_hitchance:get_value()
+for i = 0, #hitscan - 1 do
+	deagle_hitscan_backup[i] = deagle_hitscan:get_value(i)
+end
+
+
+local function weapon_switch()
+	if lua_re_menu:get_value() == 1 then
+		if lua_re_weaponconfig:get_value() == 0 then
+
+			scar_enable:set_visible(true)
+			scar_hitscan_hs:set_visible(true)
+			scar_hitscan_noscope_dt:set_visible(true)
+			scar_hitscan_dt:set_visible(true)
+			scar_safepoint_hs:set_visible(true)
+			scar_headscale_hs:set_visible(true)
+			scar_bodyscale_hs:set_visible(true)
+			scar_hitchance_hs:set_visible(true)
+			scar_safepoint_noscope_dt:set_visible(true)
+			scar_headscale_noscope_dt:set_visible(true)
+			scar_bodyscale_noscope_dt:set_visible(true)
+			scar_hitchance_noscope_dt:set_visible(true)
+			scar_safepoint_dt:set_visible(true)
+			scar_headscale_dt:set_visible(true)
+			scar_bodyscale_dt:set_visible(true)
+			scar_hitchance_dt:set_visible(true)
+
+			scout_enable:set_visible(false)
+			scout_hitscan_hs:set_visible(false)
+			scout_hitscan_noscope_dt:set_visible(false)
+			scout_hitscan_dt:set_visible(false)
+			scout_safepoint_hs:set_visible(false)
+			scout_headscale_hs:set_visible(false)
+			scout_bodyscale_hs:set_visible(false)
+			scout_hitchance_hs:set_visible(false)
+			scout_safepoint_noscope_dt:set_visible(false)
+			scout_headscale_noscope_dt:set_visible(false)
+			scout_bodyscale_noscope_dt:set_visible(false)
+			scout_hitchance_noscope_dt:set_visible(false)
+			scout_safepoint_dt:set_visible(false)
+			scout_headscale_dt:set_visible(false)
+			scout_bodyscale_dt:set_visible(false)
+			scout_hitchance_dt:set_visible(false)
+
+			pistols_enable:set_visible(false)
+			pistols_hitscan_hs:set_visible(false)
+			pistols_hitscan_dt:set_visible(false)
+			pistols_safepoint_hs:set_visible(false)
+			pistols_headscale_hs:set_visible(false)
+			pistols_bodyscale_hs:set_visible(false)
+			pistols_hitchance_hs:set_visible(false)
+			pistols_safepoint_dt:set_visible(false)
+			pistols_headscale_dt:set_visible(false)
+			pistols_bodyscale_dt:set_visible(false)
+			pistols_hitchance_dt:set_visible(false)
+
+			deagle_enable:set_visible(false)
+			deagle_hitscan_hs:set_visible(false)
+			deagle_hitscan_dt:set_visible(false)
+			deagle_safepoint_hs:set_visible(false)
+			deagle_headscale_hs:set_visible(false)
+			deagle_bodyscale_hs:set_visible(false)
+			deagle_hitchance_hs:set_visible(false)
+			deagle_safepoint_dt:set_visible(false)
+			deagle_headscale_dt:set_visible(false)
+			deagle_bodyscale_dt:set_visible(false)
+			deagle_hitchance_dt:set_visible(false)
+
+		elseif lua_re_weaponconfig:get_value() == 1 then
+
+			scar_enable:set_visible(false)
+			scar_hitscan_hs:set_visible(false)
+			scar_hitscan_noscope_dt:set_visible(false)
+			scar_hitscan_dt:set_visible(false)
+			scar_safepoint_hs:set_visible(false)
+			scar_headscale_hs:set_visible(false)
+			scar_bodyscale_hs:set_visible(false)
+			scar_hitchance_hs:set_visible(false)
+			scar_safepoint_noscope_dt:set_visible(false)
+			scar_headscale_noscope_dt:set_visible(false)
+			scar_bodyscale_noscope_dt:set_visible(false)
+			scar_hitchance_noscope_dt:set_visible(false)
+			scar_safepoint_dt:set_visible(false)
+			scar_headscale_dt:set_visible(false)
+			scar_bodyscale_dt:set_visible(false)
+			scar_hitchance_dt:set_visible(false)
+
+			scout_enable:set_visible(true)
+			scout_hitscan_hs:set_visible(true)
+			scout_hitscan_noscope_dt:set_visible(true)
+			scout_hitscan_dt:set_visible(true)
+			scout_safepoint_hs:set_visible(true)
+			scout_headscale_hs:set_visible(true)
+			scout_bodyscale_hs:set_visible(true)
+			scout_hitchance_hs:set_visible(true)
+			scout_safepoint_noscope_dt:set_visible(true)
+			scout_headscale_noscope_dt:set_visible(true)
+			scout_bodyscale_noscope_dt:set_visible(true)
+			scout_hitchance_noscope_dt:set_visible(true)
+			scout_safepoint_dt:set_visible(true)
+			scout_headscale_dt:set_visible(true)
+			scout_bodyscale_dt:set_visible(true)
+			scout_hitchance_dt:set_visible(true)
+
+			pistols_enable:set_visible(false)
+			pistols_hitscan_hs:set_visible(false)
+			pistols_hitscan_dt:set_visible(false)
+			pistols_safepoint_hs:set_visible(false)
+			pistols_headscale_hs:set_visible(false)
+			pistols_bodyscale_hs:set_visible(false)
+			pistols_hitchance_hs:set_visible(false)
+			pistols_safepoint_dt:set_visible(false)
+			pistols_headscale_dt:set_visible(false)
+			pistols_bodyscale_dt:set_visible(false)
+			pistols_hitchance_dt:set_visible(false)
+
+			deagle_enable:set_visible(false)
+			deagle_hitscan_hs:set_visible(false)
+			deagle_hitscan_dt:set_visible(false)
+			deagle_safepoint_hs:set_visible(false)
+			deagle_headscale_hs:set_visible(false)
+			deagle_bodyscale_hs:set_visible(false)
+			deagle_hitchance_hs:set_visible(false)
+			deagle_safepoint_dt:set_visible(false)
+			deagle_headscale_dt:set_visible(false)
+			deagle_bodyscale_dt:set_visible(false)
+			deagle_hitchance_dt:set_visible(false)
+
+		elseif lua_re_weaponconfig:get_value() == 2 then
+
+			scar_enable:set_visible(false)
+			scar_hitscan_hs:set_visible(false)
+			scar_hitscan_noscope_dt:set_visible(false)
+			scar_hitscan_dt:set_visible(false)
+			scar_safepoint_hs:set_visible(false)
+			scar_headscale_hs:set_visible(false)
+			scar_bodyscale_hs:set_visible(false)
+			scar_hitchance_hs:set_visible(false)
+			scar_safepoint_noscope_dt:set_visible(false)
+			scar_headscale_noscope_dt:set_visible(false)
+			scar_bodyscale_noscope_dt:set_visible(false)
+			scar_hitchance_noscope_dt:set_visible(false)
+			scar_safepoint_dt:set_visible(false)
+			scar_headscale_dt:set_visible(false)
+			scar_bodyscale_dt:set_visible(false)
+			scar_hitchance_dt:set_visible(false)
+
+			scout_enable:set_visible(false)
+			scout_hitscan_hs:set_visible(false)
+			scout_hitscan_noscope_dt:set_visible(false)
+			scout_hitscan_dt:set_visible(false)
+			scout_safepoint_hs:set_visible(false)
+			scout_headscale_hs:set_visible(false)
+			scout_bodyscale_hs:set_visible(false)
+			scout_hitchance_hs:set_visible(false)
+			scout_safepoint_noscope_dt:set_visible(false)
+			scout_headscale_noscope_dt:set_visible(false)
+			scout_bodyscale_noscope_dt:set_visible(false)
+			scout_hitchance_noscope_dt:set_visible(false)
+			scout_safepoint_dt:set_visible(false)
+			scout_headscale_dt:set_visible(false)
+			scout_bodyscale_dt:set_visible(false)
+			scout_hitchance_dt:set_visible(false)
+
+			pistols_enable:set_visible(true)
+			pistols_hitscan_hs:set_visible(true)
+			pistols_hitscan_dt:set_visible(true)
+			pistols_safepoint_hs:set_visible(true)
+			pistols_headscale_hs:set_visible(true)
+			pistols_bodyscale_hs:set_visible(true)
+			pistols_hitchance_hs:set_visible(true)
+			pistols_safepoint_dt:set_visible(true)
+			pistols_headscale_dt:set_visible(true)
+			pistols_bodyscale_dt:set_visible(true)
+			pistols_hitchance_dt:set_visible(true)
+
+			deagle_enable:set_visible(false)
+			deagle_hitscan_hs:set_visible(false)
+			deagle_hitscan_dt:set_visible(false)
+			deagle_safepoint_hs:set_visible(false)
+			deagle_headscale_hs:set_visible(false)
+			deagle_bodyscale_hs:set_visible(false)
+			deagle_hitchance_hs:set_visible(false)
+			deagle_safepoint_dt:set_visible(false)
+			deagle_headscale_dt:set_visible(false)
+			deagle_bodyscale_dt:set_visible(false)
+			deagle_hitchance_dt:set_visible(false)
+
+		elseif lua_re_weaponconfig:get_value() == 3 then
+
+			scar_enable:set_visible(false)
+			scar_hitscan_hs:set_visible(false)
+			scar_hitscan_noscope_dt:set_visible(false)
+			scar_hitscan_dt:set_visible(false)
+			scar_safepoint_hs:set_visible(false)
+			scar_headscale_hs:set_visible(false)
+			scar_bodyscale_hs:set_visible(false)
+			scar_hitchance_hs:set_visible(false)
+			scar_safepoint_noscope_dt:set_visible(false)
+			scar_headscale_noscope_dt:set_visible(false)
+			scar_bodyscale_noscope_dt:set_visible(false)
+			scar_hitchance_noscope_dt:set_visible(false)
+			scar_safepoint_dt:set_visible(false)
+			scar_headscale_dt:set_visible(false)
+			scar_bodyscale_dt:set_visible(false)
+			scar_hitchance_dt:set_visible(false)
+
+			scout_enable:set_visible(false)
+			scout_hitscan_hs:set_visible(false)
+			scout_hitscan_noscope_dt:set_visible(false)
+			scout_hitscan_dt:set_visible(false)
+			scout_safepoint_hs:set_visible(false)
+			scout_headscale_hs:set_visible(false)
+			scout_bodyscale_hs:set_visible(false)
+			scout_hitchance_hs:set_visible(false)
+			scout_safepoint_noscope_dt:set_visible(false)
+			scout_headscale_noscope_dt:set_visible(false)
+			scout_bodyscale_noscope_dt:set_visible(false)
+			scout_hitchance_noscope_dt:set_visible(false)
+			scout_safepoint_dt:set_visible(false)
+			scout_headscale_dt:set_visible(false)
+			scout_bodyscale_dt:set_visible(false)
+			scout_hitchance_dt:set_visible(false)
+
+			pistols_enable:set_visible(false)
+			pistols_hitscan_hs:set_visible(false)
+			pistols_hitscan_dt:set_visible(false)
+			pistols_safepoint_hs:set_visible(false)
+			pistols_headscale_hs:set_visible(false)
+			pistols_bodyscale_hs:set_visible(false)
+			pistols_hitchance_hs:set_visible(false)
+			pistols_safepoint_dt:set_visible(false)
+			pistols_headscale_dt:set_visible(false)
+			pistols_bodyscale_dt:set_visible(false)
+			pistols_hitchance_dt:set_visible(false)
+
+			deagle_enable:set_visible(true)
+			deagle_hitscan_hs:set_visible(true)
+			deagle_hitscan_dt:set_visible(true)
+			deagle_safepoint_hs:set_visible(true)
+			deagle_headscale_hs:set_visible(true)
+			deagle_bodyscale_hs:set_visible(true)
+			deagle_hitchance_hs:set_visible(true)
+			deagle_safepoint_dt:set_visible(true)
+			deagle_headscale_dt:set_visible(true)
+			deagle_bodyscale_dt:set_visible(true)
+			deagle_hitchance_dt:set_visible(true)
+		end
+	else
+		scar_enable:set_visible(false)
+		scar_hitscan_hs:set_visible(false)
+		scar_hitscan_noscope_dt:set_visible(false)
+		scar_hitscan_dt:set_visible(false)
+		scar_safepoint_hs:set_visible(false)
+		scar_headscale_hs:set_visible(false)
+		scar_bodyscale_hs:set_visible(false)
+		scar_hitchance_hs:set_visible(false)
+		scar_safepoint_noscope_dt:set_visible(false)
+		scar_headscale_noscope_dt:set_visible(false)
+		scar_bodyscale_noscope_dt:set_visible(false)
+		scar_hitchance_noscope_dt:set_visible(false)
+		scar_safepoint_dt:set_visible(false)
+		scar_headscale_dt:set_visible(false)
+		scar_bodyscale_dt:set_visible(false)
+		scar_hitchance_dt:set_visible(false)
+
+		scout_enable:set_visible(false)
+		scout_hitscan_hs:set_visible(false)
+		scout_hitscan_noscope_dt:set_visible(false)
+		scout_hitscan_dt:set_visible(false)
+		scout_safepoint_hs:set_visible(false)
+		scout_headscale_hs:set_visible(false)
+		scout_bodyscale_hs:set_visible(false)
+		scout_hitchance_hs:set_visible(false)
+		scout_safepoint_noscope_dt:set_visible(false)
+		scout_headscale_noscope_dt:set_visible(false)
+		scout_bodyscale_noscope_dt:set_visible(false)
+		scout_hitchance_noscope_dt:set_visible(false)
+		scout_safepoint_dt:set_visible(false)
+		scout_headscale_dt:set_visible(false)
+		scout_bodyscale_dt:set_visible(false)
+		scout_hitchance_dt:set_visible(false)
+
+		pistols_enable:set_visible(false)
+		pistols_hitscan_hs:set_visible(false)
+		pistols_hitscan_dt:set_visible(false)
+		pistols_safepoint_hs:set_visible(false)
+		pistols_headscale_hs:set_visible(false)
+		pistols_bodyscale_hs:set_visible(false)
+		pistols_hitchance_hs:set_visible(false)
+		pistols_safepoint_dt:set_visible(false)
+		pistols_headscale_dt:set_visible(false)
+		pistols_bodyscale_dt:set_visible(false)
+		pistols_hitchance_dt:set_visible(false)
+
+		deagle_enable:set_visible(false)
+		deagle_hitscan_hs:set_visible(false)
+		deagle_hitscan_dt:set_visible(false)
+		deagle_safepoint_hs:set_visible(false)
+		deagle_headscale_hs:set_visible(false)
+		deagle_bodyscale_hs:set_visible(false)
+		deagle_hitchance_hs:set_visible(false)
+		deagle_safepoint_dt:set_visible(false)
+		deagle_headscale_dt:set_visible(false)
+		deagle_bodyscale_dt:set_visible(false)
+		deagle_hitchance_dt:set_visible(false)
+	end
+end
+
+client.register_callback('paint', weapon_switch)
+
+local function scar_override()
+	if scar_enable:get_value() then
+		player = entitylist.get_local_player()
+		is_scoped = player:get_prop_bool( se.get_netvar( "DT_CSPlayer", "m_bIsScoped" ) )
+
+		if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and not is_scoped then
+			auto_head:set_value(scar_headscale_noscope_dt:get_value())
+			auto_body:set_value(scar_bodyscale_noscope_dt:get_value())
+			auto_sp:set_value(scar_safepoint_noscope_dt:get_value())
+			auto_hitchance:set_value(scar_hitchance_noscope_dt:get_value())
+			auto_autoscope:set_value(false)
+		elseif rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and is_scoped then
+			auto_head:set_value(scar_headscale_dt:get_value())
+			auto_body:set_value(scar_bodyscale_dt:get_value())
+			auto_sp:set_value(scar_safepoint_dt:get_value())
+			auto_hitchance:set_value(scar_hitchance_dt:get_value())
+			auto_autoscope:set_value(false)
+		elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			auto_head:set_value(scar_headscale_hs:get_value())
+			auto_body:set_value(scar_bodyscale_hs:get_value())
+			auto_sp:set_value(scar_safepoint_hs:get_value())
+			auto_hitchance:set_value(scar_hitchance_hs:get_value())
+			auto_autoscope:set_value(true)
+		elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			auto_head:set_value(scar_headscale_hs:get_value())
+			auto_body:set_value(scar_bodyscale_hs:get_value())
+			auto_sp:set_value(scar_safepoint_hs:get_value())
+			auto_hitchance:set_value(scar_hitchance_hs:get_value())
+			auto_autoscope:set_value(true)
+		elseif antihit_extra_fakeduck_bind:is_active() then
+			auto_head:set_value(scar_headscale_hs:get_value())
+			auto_body:set_value(scar_bodyscale_hs:get_value())
+			auto_sp:set_value(scar_safepoint_hs:get_value())
+			auto_hitchance:set_value(scar_hitchance_hs:get_value())
+			auto_autoscope:set_value(true)
+		end
+	else
+		auto_head:set_value(auto_head_backup)
+		auto_body:set_value(auto_body_backup)
+		auto_sp:set_value(auto_sp_backup)
+		auto_hitchance:set_value(auto_hitchance_backup)
+		auto_autoscope:set_value(auto_autoscope_backup)
+	end
 end
 
 local function scar_hitscan()
-    for i = 0, #hitscan - 1 do
-        if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and not is_scoped then
-            auto_hitscan:set_value(i, (scar_hitscan_noscope_dt):get_value(i))
-        elseif rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and is_scoped then
-            auto_hitscan:set_value(i, (scar_hitscan_dt):get_value(i))
-        elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
-            auto_hitscan:set_value(i, (scar_hitscan_hs):get_value(i))
-        elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
-            auto_hitscan:set_value(i, (scar_hitscan_hs):get_value(i))
-        elseif antihit_extra_fakeduck_bind:is_active() then
-            auto_hitscan:set_value(i, (scar_hitscan_hs):get_value(i))
-        end
-    end
+	if scar_enable:get_value() then
+		for i = 0, #hitscan - 1 do
+			if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and not is_scoped then
+				auto_hitscan:set_value(i, (scar_hitscan_noscope_dt):get_value(i))
+			elseif rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and is_scoped then
+				auto_hitscan:set_value(i, (scar_hitscan_dt):get_value(i))
+			elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				auto_hitscan:set_value(i, (scar_hitscan_hs):get_value(i))
+			elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				auto_hitscan:set_value(i, (scar_hitscan_hs):get_value(i))
+			elseif antihit_extra_fakeduck_bind:is_active() then
+				auto_hitscan:set_value(i, (scar_hitscan_hs):get_value(i))
+			end
+		end
+	else
+		for i = 0, #hitscan - 1 do
+			auto_hitscan:set_value(i, auto_hitscan_backup[i])
+		end
+	end
 end
 
 client.register_callback('create_move', scar_override)
 client.register_callback('create_move', scar_hitscan)
+
+
+local function scout_override()
+	if scout_enable:get_value() then
+		player = entitylist.get_local_player()
+		is_scoped = player:get_prop_bool( se.get_netvar( "DT_CSPlayer", "m_bIsScoped" ) )
+
+		if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and not is_scoped then
+			scout_head:set_value(scout_headscale_noscope_dt:get_value())
+			scout_body:set_value(scout_bodyscale_noscope_dt:get_value())
+			scout_sp:set_value(scout_safepoint_noscope_dt:get_value())
+			scout_hitchance:set_value(scout_hitchance_noscope_dt:get_value())
+			scout_autoscope:set_value(false)
+		elseif rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and is_scoped then
+			scout_head:set_value(scout_headscale_dt:get_value())
+			scout_body:set_value(scout_bodyscale_dt:get_value())
+			scout_sp:set_value(scout_safepoint_dt:get_value())
+			scout_hitchance:set_value(scout_hitchance_dt:get_value())
+			scout_autoscope:set_value(false)
+		elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			scout_head:set_value(scout_headscale_hs:get_value())
+			scout_body:set_value(scout_bodyscale_hs:get_value())
+			scout_sp:set_value(scout_safepoint_hs:get_value())
+			scout_hitchance:set_value(scout_hitchance_hs:get_value())
+			scout_autoscope:set_value(true)
+		elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			scout_head:set_value(scout_headscale_hs:get_value())
+			scout_body:set_value(scout_bodyscale_hs:get_value())
+			scout_sp:set_value(scout_safepoint_hs:get_value())
+			scout_hitchance:set_value(scout_hitchance_hs:get_value())
+			scout_autoscope:set_value(true)
+		elseif antihit_extra_fakeduck_bind:is_active() then
+			scout_head:set_value(scout_headscale_hs:get_value())
+			scout_body:set_value(scout_bodyscale_hs:get_value())
+			scout_sp:set_value(scout_safepoint_hs:get_value())
+			scout_hitchance:set_value(scout_hitchance_hs:get_value())
+			scout_autoscope:set_value(true)
+		end
+	else
+		scout_head:set_value(scout_head_backup)
+		scout_body:set_value(scout_body_backup)
+		scout_sp:set_value(scout_sp_backup)
+		scout_hitchance:set_value(scout_hitchance_backup)
+		scout_autoscope:set_value(scout_autoscope_backup)
+	end
+end
+
+local function scouthit_hitscan()
+	if scout_enable:get_value() then
+		for i = 0, #hitscan - 1 do
+			if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and not is_scoped then
+				scout_hitscan:set_value(i, (scout_hitscan_noscope_dt):get_value(i))
+			elseif rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() and is_scoped then
+				scout_hitscan:set_value(i, (scout_hitscan_dt):get_value(i))
+			elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				scout_hitscan:set_value(i, (scout_hitscan_hs):get_value(i))
+			elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				scout_hitscan:set_value(i, (scout_hitscan_hs):get_value(i))
+			elseif antihit_extra_fakeduck_bind:is_active() then
+				scout_hitscan:set_value(i, (scout_hitscan_hs):get_value(i))
+			end
+		end
+	else
+		for i = 0, #hitscan - 1 do
+			scout_hitscan:set_value(i, scout_hitscan_backup[i])
+		end
+	end
+end
+
+client.register_callback('create_move', scout_override)
+client.register_callback('create_move', scouthit_hitscan)
+
+
+
+local function pistols_override()
+	if pistols_enable:get_value() then
+		if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			pistols_head:set_value(pistols_headscale_dt:get_value())
+			pistols_body:set_value(pistols_bodyscale_dt:get_value())
+			pistols_sp:set_value(pistols_safepoint_dt:get_value())
+			pistols_hitchance:set_value(pistols_hitchance_dt:get_value())
+		elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			pistols_head:set_value(pistols_headscale_hs:get_value())
+			pistols_body:set_value(pistols_bodyscale_hs:get_value())
+			pistols_sp:set_value(pistols_safepoint_hs:get_value())
+			pistols_hitchance:set_value(pistols_hitchance_hs:get_value())
+		elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			pistols_head:set_value(pistols_headscale_hs:get_value())
+			pistols_body:set_value(pistols_bodyscale_hs:get_value())
+			pistols_sp:set_value(pistols_safepoint_hs:get_value())
+			pistols_hitchance:set_value(pistols_hitchance_hs:get_value())
+		elseif antihit_extra_fakeduck_bind:is_active() then
+			pistols_head:set_value(pistols_headscale_hs:get_value())
+			pistols_body:set_value(pistols_bodyscale_hs:get_value())
+			pistols_sp:set_value(pistols_safepoint_hs:get_value())
+			pistols_hitchance:set_value(pistols_hitchance_hs:get_value())
+		end
+	else
+		pistols_head:set_value(pistols_head_backup)
+		pistols_body:set_value(pistols_body_backup)
+		pistols_sp:set_value(pistols_sp_backup)
+		pistols_hitchance:set_value(pistols_hitchance_backup)
+	end
+end
+
+local function pistolshit_hitscan()
+	if pistols_enable:get_value() then
+		for i = 0, #hitscan - 1 do
+			if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				pistols_hitscan:set_value(i, (pistols_hitscan_dt):get_value(i))
+			elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				pistols_hitscan:set_value(i, (pistols_hitscan_hs):get_value(i))
+			elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				pistols_hitscan:set_value(i, (pistols_hitscan_hs):get_value(i))
+			elseif antihit_extra_fakeduck_bind:is_active() then
+				pistols_hitscan:set_value(i, (pistols_hitscan_hs):get_value(i))
+			end
+		end
+	else
+		for i = 0, #hitscan - 1 do
+			pistols_hitscan:set_value(i, pistols_hitscan_backup[i])
+		end
+	end
+end
+
+client.register_callback('create_move', pistols_override)
+client.register_callback('create_move', pistolshit_hitscan)
+
+
+local function deagle_override()
+	if deagle_enable:get_value() then
+		if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			deagle_head:set_value(deagle_headscale_dt:get_value())
+			deagle_body:set_value(deagle_bodyscale_dt:get_value())
+			deagle_sp:set_value(deagle_safepoint_dt:get_value())
+			deagle_hitchance:set_value(deagle_hitchance_dt:get_value())
+		elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			deagle_head:set_value(deagle_headscale_hs:get_value())
+			deagle_body:set_value(deagle_bodyscale_hs:get_value())
+			deagle_sp:set_value(deagle_safepoint_hs:get_value())
+			deagle_hitchance:set_value(deagle_hitchance_hs:get_value())
+		elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+			deagle_head:set_value(deagle_headscale_hs:get_value())
+			deagle_body:set_value(deagle_bodyscale_hs:get_value())
+			deagle_sp:set_value(deagle_safepoint_hs:get_value())
+			deagle_hitchance:set_value(deagle_hitchance_hs:get_value())
+		elseif antihit_extra_fakeduck_bind:is_active() then
+			deagle_head:set_value(deagle_headscale_hs:get_value())
+			deagle_body:set_value(deagle_bodyscale_hs:get_value())
+			deagle_sp:set_value(deagle_safepoint_hs:get_value())
+			deagle_hitchance:set_value(deagle_hitchance_hs:get_value())
+		end
+	else
+		deagle_head:set_value(deagle_head_backup)
+		deagle_body:set_value(deagle_body_backup)
+		deagle_sp:set_value(deagle_sp_backup)
+		deagle_hitchance:set_value(deagle_hitchance_backup)
+	end
+end
+
+local function deaglehit_hitscan()
+	if deagle_enable:get_value() then
+		for i = 0, #hitscan - 1 do
+			if rage_active_exploit:get_value() == 2 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				deagle_hitscan:set_value(i, (deagle_hitscan_dt):get_value(i))
+			elseif rage_active_exploit:get_value() == 1 and rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				deagle_hitscan:set_value(i, (deagle_hitscan_hs):get_value(i))
+			elseif not rage_active_exploit_bind:is_active() and not antihit_extra_fakeduck_bind:is_active() then
+				deagle_hitscan:set_value(i, (deagle_hitscan_hs):get_value(i))
+			elseif antihit_extra_fakeduck_bind:is_active() then
+				deagle_hitscan:set_value(i, (deagle_hitscan_hs):get_value(i))
+			end
+		end
+	else
+		for i = 0, #hitscan - 1 do
+			deagle_hitscan:set_value(i, deagle_hitscan_backup[i])
+		end
+	end
+end
+
+client.register_callback('create_move', deagle_override)
+client.register_callback('create_move', deaglehit_hitscan)
+
 
 
 
@@ -637,7 +1213,6 @@ client.register_callback('create_move', scar_hitscan)
 		{ name = 'LAIM',                cfg = lua_re_laim_bind,              type = 'key_bind' },
 		{ name = 'Lethal',              cfg = lua_re_lethal_bind,            type = 'key_bind' },
 		{ name = 'MinDmg',     			cfg = lua_re_mindmg_bind,       	 type = 'key_bind' },
-		{ name = 'Jumpscout',        	cfg = lua_re_jumpscout,            	 type = 'key_bind' },
 		{ name = 'Force Safepoint',     cfg = lua_re_safepoints_bind,        type = 'key_bind' },
 		{ name = 'Damage Override',     cfg = lua_re_dmgoverride_bind,       type = 'key_bind' },
 		{ name = 'Resolver Disabled',   cfg = lua_re_resolver_override_bind, type = 'key_bind' },
@@ -1038,29 +1613,10 @@ local function menu_switch()
 			
 		lua_re_bt:set_visible(true)
 		lua_re_bt_onxploit:set_visible(true)
-			
-		lua_re_jumpscout:set_visible(true)
-		lua_re_jumpscout_hitboxes:set_visible(true)
-		lua_re_jumpscout_hc:set_visible(true)
-		lua_re_jumpscout_dmg:set_visible(true)
 
 		-- DT/HS/FL/FD
-		scar_hitscan_hs:set_visible(false)
-		scar_hitscan_noscope_dt:set_visible(false)
-		scar_hitscan_dt:set_visible(false)
-		scar_safepoint_hs:set_visible(false)
-		scar_headscale_hs:set_visible(false)
-		scar_bodyscale_hs:set_visible(false)
-		scar_hitchance_hs:set_visible(false)
-		scar_safepoint_noscope_dt:set_visible(false)
-		scar_headscale_noscope_dt:set_visible(false)
-		scar_bodyscale_noscope_dt:set_visible(false)
-		scar_hitchance_noscope_dt:set_visible(false)
-		scar_safepoint_dt:set_visible(false)
-		scar_headscale_dt:set_visible(false)
-		scar_bodyscale_dt:set_visible(false)
-		scar_hitchance_dt:set_visible(false)
-
+		lua_re_weaponconfig:set_visible(false)
+		
 		-- Indicators
 		indicators_switch:set_visible(false)
 		x_slider:set_visible(false)
@@ -1102,28 +1658,9 @@ local function menu_switch()
 			
 		lua_re_bt:set_visible(false)
 		lua_re_bt_onxploit:set_visible(false)
-			
-		lua_re_jumpscout:set_visible(false)
-		lua_re_jumpscout_hitboxes:set_visible(false)
-		lua_re_jumpscout_hc:set_visible(false)
-		lua_re_jumpscout_dmg:set_visible(false)
 
 		-- DT/HS/FL/FD
-		scar_hitscan_hs:set_visible(true)
-		scar_hitscan_noscope_dt:set_visible(true)
-		scar_hitscan_dt:set_visible(true)
-		scar_safepoint_hs:set_visible(true)
-		scar_headscale_hs:set_visible(true)
-		scar_bodyscale_hs:set_visible(true)
-		scar_hitchance_hs:set_visible(true)
-		scar_safepoint_noscope_dt:set_visible(true)
-		scar_headscale_noscope_dt:set_visible(true)
-		scar_bodyscale_noscope_dt:set_visible(true)
-		scar_hitchance_noscope_dt:set_visible(true)
-		scar_safepoint_dt:set_visible(true)
-		scar_headscale_dt:set_visible(true)
-		scar_bodyscale_dt:set_visible(true)
-		scar_hitchance_dt:set_visible(true)
+		lua_re_weaponconfig:set_visible(true)
 
 		-- Indicators
 		indicators_switch:set_visible(false)
@@ -1166,28 +1703,9 @@ local function menu_switch()
 			
 		lua_re_bt:set_visible(false)
 		lua_re_bt_onxploit:set_visible(false)
-			
-		lua_re_jumpscout:set_visible(false)
-		lua_re_jumpscout_hitboxes:set_visible(false)
-		lua_re_jumpscout_hc:set_visible(false)
-		lua_re_jumpscout_dmg:set_visible(false)
 
 		-- DT/HS/FL/FD
-		scar_hitscan_hs:set_visible(false)
-		scar_hitscan_noscope_dt:set_visible(false)
-		scar_hitscan_dt:set_visible(false)
-		scar_safepoint_hs:set_visible(false)
-		scar_headscale_hs:set_visible(false)
-		scar_bodyscale_hs:set_visible(false)
-		scar_hitchance_hs:set_visible(false)
-		scar_safepoint_noscope_dt:set_visible(false)
-		scar_headscale_noscope_dt:set_visible(false)
-		scar_bodyscale_noscope_dt:set_visible(false)
-		scar_hitchance_noscope_dt:set_visible(false)
-		scar_safepoint_dt:set_visible(false)
-		scar_headscale_dt:set_visible(false)
-		scar_bodyscale_dt:set_visible(false)
-		scar_hitchance_dt:set_visible(false)
+		lua_re_weaponconfig:set_visible(false)
 
 		-- Indicators
 		indicators_switch:set_visible(true)
@@ -1205,4 +1723,4 @@ local function menu_switch()
 end
 
 
-client.register_callback("create_move", menu_switch)
+client.register_callback("paint", menu_switch)
