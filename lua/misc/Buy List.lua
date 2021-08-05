@@ -1,6 +1,6 @@
 local ToggleList = ui.add_multi_combo_box("Buy List Type", "ToggleList", { "Buy List", "Logs", "In TAB (Soon)" }, { true, false, false })
 
-local color = ui.add_color_edit('color edit', 'color', false, color_t.new(255, 255, 255, 255))
+local color_line = ui.add_color_edit('color edit', 'color_line', false, color_t.new(255, 255, 255, 255))
 
 x = 0
 y = 600
@@ -52,7 +52,7 @@ client.register_callback("paint", function()
 	renderer.rect(vec2_t.new(x + 1, y - 16 + 1), vec2_t.new(x + custom_w - 1, y + custom_h - 1), color_t.new(75, 75, 75, g_Alpha))
 	renderer.rect(vec2_t.new(x + 2, y - 16 + 2), vec2_t.new(x + custom_w - 2, y + custom_h - 2), color_t.new(75, 75, 75, g_Alpha))
 	--LEBEL
-	local colorline = color:get_value()
+	local colorline = color_line:get_value()
 
 	local r = colorline.r
 	local g = colorline.g
