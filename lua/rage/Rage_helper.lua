@@ -187,7 +187,7 @@ local lua_re_safepoints_bind = ui.add_key_bind("Force Safepoints", "lua_re_safep
 local lua_re_lethal_bind = ui.add_key_bind("Force Lethal Shots", "lua_re_lethal_bind", 0, 2)
 local lua_re_pingspike_bind = ui.add_key_bind("Ping Spike", "lua_re_pingspike_bind", 0, 2)
 local lua_re_mindmg_bind = ui.add_key_bind("MinDmg", "lua_re_mindmg_bind", 0, 2)
-local lua_re_resolver_override_bind = ui.add_key_bind("Disable Resolver", "lua_re_resolver_override_bind", 0, 2)
+local lua_re_resolver_override_bind = ui.add_key_bind("Resolver Override", "lua_re_resolver_override_bind", 0, 2)
 
 local lua_re_dmgoverride_bind = ui.add_key_bind("Damage Override", "lua_re_dmgoverride_bind", 0, 2)
 local lua_re_dmgoverride = ui.add_slider_int("Override Value", "lua_re_dmgoverride", 0, 100, 0)
@@ -1214,7 +1214,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		{ name = 'MinDmg',     			cfg = lua_re_mindmg_bind,       	 type = 'key_bind' },
 		{ name = 'Force Safepoint',     cfg = lua_re_safepoints_bind,        type = 'key_bind' },
 		{ name = 'Damage Override',     cfg = lua_re_dmgoverride_bind,       type = 'key_bind' },
-		{ name = 'Resolver Disabled',   cfg = lua_re_resolver_override_bind, type = 'key_bind' },
+		{ name = 'Resolver Override',   cfg = lua_re_resolver_override_bind, type = 'key_bind' },
 		{ name = exploit_names,         cfg = ui.get_key_bind('rage_active_exploit_bind'),      type = 'key_bind' },
 		{ name = 'FL',                  type = 'static' },
 	}
@@ -1616,9 +1616,6 @@ local function menu_switch()
 		lua_re_autopeek:set_visible(true)
 		lua_re_autopeek_circle:set_visible(true)
 			
-		scale_thirdperson:set_visible(true)
-		thirdperson_scale:set_visible(true)
-			
 		lua_re_onlyhead_bind:set_visible(true)
 		lua_re_baim_bind:set_visible(true)
 		lua_re_laim_bind:set_visible(true)
@@ -1640,6 +1637,9 @@ local function menu_switch()
 		lua_re_weaponconfig:set_visible(false)
 		
 		-- Indicators
+		scale_thirdperson:set_visible(false)
+		thirdperson_scale:set_visible(false)
+
 		indicators_switch:set_visible(false)
 		x_slider:set_visible(false)
 		y_slider:set_visible(false)
@@ -1660,9 +1660,6 @@ local function menu_switch()
 			
 		lua_re_autopeek:set_visible(false)
 		lua_re_autopeek_circle:set_visible(false)
-			
-		scale_thirdperson:set_visible(false)
-		thirdperson_scale:set_visible(false)
 			
 		lua_re_onlyhead_bind:set_visible(false)
 		lua_re_baim_bind:set_visible(false)
@@ -1685,6 +1682,9 @@ local function menu_switch()
 		lua_re_weaponconfig:set_visible(true)
 
 		-- Indicators
+		scale_thirdperson:set_visible(false)
+		thirdperson_scale:set_visible(false)
+
 		indicators_switch:set_visible(false)
 		x_slider:set_visible(false)
 		y_slider:set_visible(false)
@@ -1705,10 +1705,7 @@ local function menu_switch()
 			
 		lua_re_autopeek:set_visible(false)
 		lua_re_autopeek_circle:set_visible(false)
-			
-		scale_thirdperson:set_visible(false)
-		thirdperson_scale:set_visible(false)
-			
+		
 		lua_re_onlyhead_bind:set_visible(false)
 		lua_re_baim_bind:set_visible(false)
 		lua_re_laim_bind:set_visible(false)
@@ -1730,6 +1727,9 @@ local function menu_switch()
 		lua_re_weaponconfig:set_visible(false)
 
 		-- Indicators
+		scale_thirdperson:set_visible(true)
+		thirdperson_scale:set_visible(true)
+
 		indicators_switch:set_visible(true)
 		x_slider:set_visible(true)
 		y_slider:set_visible(true)
