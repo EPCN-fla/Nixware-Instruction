@@ -175,7 +175,7 @@ local lua_re_votelogs = ui.add_check_box("Vote Logs", "lua_re_votelogs", false)
 local lua_re_buylogs = ui.add_check_box("Buy Logs", "lua_re_buylogs", false)
 
 local lua_re_autopeek = ui.add_key_bind("Autopeek", "lua_re_autopeek", 0, 1)
-local lua_re_autopeek_circle = ui.add_color_edit("Autopeek Circle", "lua_re_autopeek_circle", true, color_t.new(79, 79, 79, 255))
+local lua_re_autopeek_circle = ui.add_color_edit("Autopeek Circle", "lua_re_autopeek_circle", true, color_t.new(255, 0, 0, 120))
 
 local scale_thirdperson = ui.add_check_box("Thirdperson Distance", "scale_thirdperson", false)
 local thirdperson_scale = ui.add_slider_int("Thirdperson Scale", "thirdperson_scale", 65, 200, 120)
@@ -1205,7 +1205,6 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 	local binds = {
 		{ name = 'XT',                  cfg = ui.get_slider_int('misc_ping_spike_amount'),      type = 'slider_int', disable_val = 0 },
-		{ name = exploit_names,         cfg = ui.get_key_bind('rage_active_exploit_bind'),      type = 'key_bind' },
 		{ name = 'FD',                  cfg = ui.get_key_bind('antihit_extra_fakeduck_bind'),   type = 'key_bind' },
 		{ name = 'AP',                  cfg = lua_re_autopeek,               type = 'key_bind' },
 		{ name = 'Only Head',           cfg = lua_re_onlyhead_bind,          type = 'key_bind' },
@@ -1216,6 +1215,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		{ name = 'Force Safepoint',     cfg = lua_re_safepoints_bind,        type = 'key_bind' },
 		{ name = 'Damage Override',     cfg = lua_re_dmgoverride_bind,       type = 'key_bind' },
 		{ name = 'Resolver Disabled',   cfg = lua_re_resolver_override_bind, type = 'key_bind' },
+		{ name = exploit_names,         cfg = ui.get_key_bind('rage_active_exploit_bind'),      type = 'key_bind' },
 		{ name = 'FL',                  type = 'static' },
 	}
 
@@ -1232,6 +1232,29 @@ client.register_callback('create_move', deaglehit_hitscan)
 		renderer.rect_filled(vec2_t.new(x, y), vec2_t.new(x+w, y+h), color)
 	end
 
+	local function render_arc(x, y, radius, radius_inner, start_angle, end_angle, segments, color)
+        local segments = 360 / segments;
+        for i = start_angle,start_angle + end_angle,segments / 2 do
+            local rad = -i * math.pi / 180;
+            local rad2 = -(i + segments) * math.pi / 180;
+            local rad_cos = math.cos(rad);
+            local rad_sin = math.sin(rad);
+            local rad2_cos = math.cos(rad2);
+            local rad2_sin = math.sin(rad2);
+            local x1_inner = x + rad_cos * radius_inner;
+            local y1_inner = y + rad_sin * radius_inner;
+            local x1_outer = x + rad_cos * radius;
+            local y1_outer = y + rad_sin * radius;
+            local x2_inner = x + rad2_cos * radius_inner;
+            local y2_inner = y + rad2_sin * radius_inner;
+            local x2_outer = x + rad2_cos * radius;
+            local y2_outer = y + rad2_sin * radius;
+			
+            renderer.filled_polygon({ vec2_t.new(x1_outer, y1_outer),vec2_t.new(x2_outer, y2_outer),vec2_t.new(x1_inner, y1_inner) },color)
+            renderer.filled_polygon({ vec2_t.new(x1_inner, y1_inner),vec2_t.new(x2_outer, y2_outer),vec2_t.new(x2_inner, y2_inner) },color)
+    end
+end
+
 	local function draw_indicators()
 		local x = x_slider:get_value()
 		local h = screen.y - 50 - y_slider:get_value()
@@ -1239,7 +1262,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		local y = 30 * #indicators
 
 		for key, value in pairs(indicators) do
-			local addition = 0
+			local addition = 6
 
 			local sizes = renderer.get_text_size(fonts.tohomabd, 30, value.text)
 			
@@ -1250,11 +1273,10 @@ client.register_callback('create_move', deaglehit_hitscan)
 			if value.bar then
 				local bar = value.bar
 				local fill = (sizes.x - 2) / (bar.max - bar.min) * (bar.value - bar.min)
-
-				render_filled_rect(x, h - y + addition, sizes.x, 8, color_t.new(0, 0, 0, 150))
-				render_filled_rect(x + 1, h - y + addition + 1, fill, 6, bar.color)
 			
-				addition = addition + 6
+				render_arc(x + 58, h - y + addition - 20, 12, 8, 0, 360, 50, color_t.new(0, 0, 0, 150))
+				render_arc(x + 58, h - y + addition - 20, 11, 7, 90, fill * 13, 50, bar.color)
+
 			end
 
 			y = y - addition
