@@ -14,6 +14,8 @@ This is an instruction of nixware[beta] mainly for Chinese User.
 # What Does This Repository Do Now
 * Updating the construction in English (Mainly) and Chinese instruction
 * Collecting more luas from the official forum
+* Try to fix some broken luas
+* Scripting new luas (like gun indicators)
 
 # Contributors
 **[Fla1337](https://github.com/EPCN-fla)**
