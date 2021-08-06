@@ -1275,7 +1275,7 @@ end
 				local fill = (sizes.x - 2) / (bar.max - bar.min) * (bar.value - bar.min)
 			
 				render_arc(x + 58, h - y + addition - 20, 12, 8, 0, 360, 50, color_t.new(0, 0, 0, 150))
-				render_arc(x + 58, h - y + addition - 20, 11, 7, 90, fill * 13, 50, bar.color)
+				render_arc(x + 58, h - y + addition - 20, 11.5, 8, 90, fill * 13, 50, bar.color)
 
 			end
 
