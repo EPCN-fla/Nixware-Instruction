@@ -11,9 +11,11 @@
 
 **[点击这里](https://github.com/EPCN-fla/Nixware-Instruction/wiki/%5BCN%5D-Nixware-%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C)转到Wiki页面查看nixware[beta]的具体使用手册**
 
-# 仓库当前状态
+# 仓库当前状态（按优先级排列）
 * 更新使用手册
 * 收集论坛上的lua
+* 尝试修复部分损坏的lua
+* 编写新lua（例如枪口指示器等）
 
 # 贡献者
 **[Fla1337](https://github.com/EPCN-fla)**
