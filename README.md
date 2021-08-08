@@ -1,4 +1,6 @@
 **简体中文 | [English](./README_en-us.md)**
+# 虽然2021.8.8 nixware被破解，但是永远会支持下去。无论nixware跑路还是大更，本仓库依旧提供各种lua，请各位放心。
+
 # Nixware 使用手册
 这是一份主要面向中国nixware[beta]用户的使用手册
 
