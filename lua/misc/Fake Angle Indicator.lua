@@ -97,7 +97,7 @@ client.register_callback("paint", function()
 
     if not engine.is_in_game() then return end
     renderer.rect_filled(vec2_t.new(screen.x / 2 - 647, screen.y / 2 - 343), vec2_t.new(screen.x / 2 - 443, screen.y / 2 - 342), color_t.new(0, 255, 255, 255))
-    renderer.rect_filled(vec2_t.new(screen.x / 2 - 648, screen.y / 2 - 342), vec2_t.new(screen.x / 2 - 442, screen.y / 2 - 316), color_t.new(30, 30, 30, 255))
+    renderer.rect_filled(vec2_t.new(screen.x / 2 - 648, screen.y / 2 - 342), vec2_t.new(screen.x / 2 - 442, screen.y / 2 - 316), color_t.new(30, 30, 30, 150))
     renderer.text("Fake Angle :", fontVerdana, vec2_t.new(screen.x / 2 - 644, screen.y / 2 - 336), 14, color_t.new(255, 255, 255, 255))
     renderer.text(tostring(ANTIAIM_GetMaxDesyncDelta(entitylist.get_local_player())), fontVerdana, vec2_t.new(screen.x / 2 - 562, screen.y / 2 - 336), 14, color_t.new(255, 255, 255, 255))
 
