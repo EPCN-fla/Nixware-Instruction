@@ -70,9 +70,6 @@ local function is_knife()
 	return false
 end
 
-local function dist(a, b)
-	return vec3_t.new(a.x - b.x, a.y - b.y, a.z - b.z):length()
-end
 
 local m_vecViewOffset = se.get_netvar("DT_BasePlayer", "m_vecViewOffset[0]")
 
@@ -130,12 +127,12 @@ local hitboxes =
 
 local hitscan =
 {
-	"head",
-	"chest",
-	"pelvis",
-	"stomach",
-	"legs",
-	"foot"
+	"Head",
+	"Pelvis",
+	"Stomach",
+	"Chest",
+	"Legs",
+	"Foot"
 }
 
 local hitboxes_hit = {
@@ -167,7 +164,7 @@ local SCAN_STOMACH = 3
 local SCAN_LEGS = 4
 local SCAN_FOOT = 5
 
-
+--Main
 local lua_re_menu = ui.add_combo_box("Menu", "lua_menu", { "Rage", "DT/HS/FL/FD", "Visuals" }, 0)
 
 local lua_re_ragelogs = ui.add_check_box("Rage Logs", "lua_re_ragelogs", false)
@@ -185,12 +182,12 @@ local lua_re_baim_bind = ui.add_key_bind("Force BAIM", "lua_re_baim_bind", 0, 2)
 local lua_re_laim_bind = ui.add_key_bind("Wash Legs", "lua_re_laim_bind", 0, 2)
 local lua_re_safepoints_bind = ui.add_key_bind("Force Safepoints", "lua_re_safepoints_bind", 0, 2)
 local lua_re_lethal_bind = ui.add_key_bind("Force Lethal Shots", "lua_re_lethal_bind", 0, 2)
+local lua_re_mindmg_bind = ui.add_key_bind("Min Damage", "lua_re_mindmg_bind", 0, 2)
 local lua_re_pingspike_bind = ui.add_key_bind("Ping Spike", "lua_re_pingspike_bind", 0, 2)
-local lua_re_mindmg_bind = ui.add_key_bind("MinDmg", "lua_re_mindmg_bind", 0, 2)
 local lua_re_resolver_override_bind = ui.add_key_bind("Resolver Override", "lua_re_resolver_override_bind", 0, 2)
 
 local lua_re_dmgoverride_bind = ui.add_key_bind("Damage Override", "lua_re_dmgoverride_bind", 0, 2)
-local lua_re_dmgoverride = ui.add_slider_int("Override Value", "lua_re_dmgoverride", 0, 100, 0)
+local lua_re_dmgoverride = ui.add_slider_int("Damage Override Value", "lua_re_dmgoverride", 0, 100, 0)
 
 local lua_re_switchexploit = ui.add_key_bind("Switch Exploit", "lua_re_switchexploit", 0, 1)
 
@@ -495,30 +492,30 @@ local lua_re_weaponconfig = ui.add_combo_box("Weapon Configs","lua_weaponconfig"
 
 --Auto
 local scar_enable = ui.add_check_box("Enable Superior Auto", "scar_enable", false)
-local scar_hitscan_hs = ui.add_multi_combo_box('Auto HS/FL/FD Hitscan', 'scar_hitscan_hs', hitscan, { false, false, false, false, false, false })
-local scar_hitscan_noscope_dt = ui.add_multi_combo_box('Auto DT NoScope Hitscan', 'scar_hitscan_noscope_dt', hitscan, { false, false, false, false, false, false })
-local scar_hitscan_dt = ui.add_multi_combo_box('Auto DT Hitscan', 'scar_hitscan_dt', hitscan, { false, false, false, false, false, false })
-local scar_safepoint_hs = ui.add_combo_box('Auto HS/FL/FD Safepoints', 'scar_safepoint_hs', {'default', 'prefer', 'force'}, 0)
-local scar_headscale_hs = ui.add_slider_int('Auto HS/FL/FD Head Scale', 'scar_headscale_hs', 0, 100, 0)
-local scar_bodyscale_hs = ui.add_slider_int('Auto HS/FL/FD Body Scale', 'scar_bodyscale_hs', 0, 100, 0)
-local scar_hitchance_hs = ui.add_slider_int('Auto HS/FL/FD HitChance', 'scar_hitchance_hs', 0, 100, 0)
-local scar_safepoint_noscope_dt = ui.add_combo_box('Auto DT NoScope Safepoints', 'scar_safepoint_noscope_dt', {'default', 'prefer', 'force'}, 0)
-local scar_headscale_noscope_dt = ui.add_slider_int('Auto DT NoScope Head Scale', 'scar_headscale_noscope_dt', 0, 100, 0)
-local scar_bodyscale_noscope_dt = ui.add_slider_int('Auto DT NoScope Body Scale', 'scar_bodyscale_noscope_dt', 0, 100, 0)
-local scar_hitchance_noscope_dt = ui.add_slider_int('Auto DT NoScope HitChance', 'scar_hitchance_noscope_dt', 0, 100, 0)
-local scar_safepoint_dt = ui.add_combo_box('Auto DT Safepoints', 'scar_safepoint_dt', {'default', 'prefer', 'force'}, 0)
-local scar_headscale_dt = ui.add_slider_int('Auto DT Head Scale', 'scar_headscale_dt', 0, 100, 0)
-local scar_bodyscale_dt = ui.add_slider_int('Auto DT Body Scale', 'scar_bodyscale_dt', 0, 100, 0)
-local scar_hitchance_dt = ui.add_slider_int('Auto DT HitChance', 'scar_hitchance_dt', 0, 100, 0)
+scar_hitscan_hs = ui.add_multi_combo_box('Auto HS/FL/FD Hitscan', 'scar_hitscan_hs', hitscan, { false, false, false, false, false, false })
+scar_hitscan_noscope_dt = ui.add_multi_combo_box('Auto DT NoScope Hitscan', 'scar_hitscan_noscope_dt', hitscan, { false, false, false, false, false, false })
+scar_hitscan_dt = ui.add_multi_combo_box('Auto DT Hitscan', 'scar_hitscan_dt', hitscan, { false, false, false, false, false, false })
+scar_safepoint_hs = ui.add_combo_box('Auto HS/FL/FD Safepoints', 'scar_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+scar_headscale_hs = ui.add_slider_int('Auto HS/FL/FD Head Scale', 'scar_headscale_hs', 0, 100, 0)
+scar_bodyscale_hs = ui.add_slider_int('Auto HS/FL/FD Body Scale', 'scar_bodyscale_hs', 0, 100, 0)
+scar_hitchance_hs = ui.add_slider_int('Auto HS/FL/FD HitChance', 'scar_hitchance_hs', 0, 100, 0)
+scar_safepoint_noscope_dt = ui.add_combo_box('Auto DT NoScope Safepoints', 'scar_safepoint_noscope_dt', {'default', 'prefer', 'force'}, 0)
+scar_headscale_noscope_dt = ui.add_slider_int('Auto DT NoScope Head Scale', 'scar_headscale_noscope_dt', 0, 100, 0)
+scar_bodyscale_noscope_dt = ui.add_slider_int('Auto DT NoScope Body Scale', 'scar_bodyscale_noscope_dt', 0, 100, 0)
+scar_hitchance_noscope_dt = ui.add_slider_int('Auto DT NoScope HitChance', 'scar_hitchance_noscope_dt', 0, 100, 0)
+scar_safepoint_dt = ui.add_combo_box('Auto DT Safepoints', 'scar_safepoint_dt', {'default', 'prefer', 'force'}, 0)
+scar_headscale_dt = ui.add_slider_int('Auto DT Head Scale', 'scar_headscale_dt', 0, 100, 0)
+scar_bodyscale_dt = ui.add_slider_int('Auto DT Body Scale', 'scar_bodyscale_dt', 0, 100, 0)
+scar_hitchance_dt = ui.add_slider_int('Auto DT HitChance', 'scar_hitchance_dt', 0, 100, 0)
 
-local auto_hitscan = ui.get_multi_combo_box("rage_auto_hitscan")
-local auto_head = ui.get_slider_int("rage_auto_head_pointscale") 
-local auto_body = ui.get_slider_int("rage_auto_body_pointscale")
-local auto_sp = ui.get_combo_box("rage_auto_safepoints")
-local auto_hitchance = ui.get_slider_int("rage_auto_hitchance")
-local auto_autoscope = ui.get_check_box("rage_auto_autoscope")
+auto_hitscan = ui.get_multi_combo_box("rage_auto_hitscan")
+auto_head = ui.get_slider_int("rage_auto_head_pointscale") 
+auto_body = ui.get_slider_int("rage_auto_body_pointscale")
+auto_sp = ui.get_combo_box("rage_auto_safepoints")
+auto_hitchance = ui.get_slider_int("rage_auto_hitchance")
+auto_autoscope = ui.get_check_box("rage_auto_autoscope")
 
-local auto_hitscan_backup ={}
+auto_hitscan_backup ={}
 auto_head_backup = auto_head:get_value()
 auto_body_backup = auto_body:get_value()
 auto_sp_backup = auto_sp:get_value()
@@ -530,30 +527,30 @@ end
 
 --Scout
 local scout_enable = ui.add_check_box("Enable Superior Scout", "scout_enable", false)
-local scout_hitscan_hs = ui.add_multi_combo_box('Scout HS/FL/FD Hitscan', 'scout_hitscan_hs', hitscan, { false, false, false, false, false, false })
-local scout_hitscan_noscope_dt = ui.add_multi_combo_box('Scout DT NoScope Hitscan', 'scout_hitscan_noscope_dt', hitscan, { false, false, false, false, false, false })
-local scout_hitscan_dt = ui.add_multi_combo_box('Scout DT Hitscan', 'scout_hitscan_dt', hitscan, { false, false, false, false, false, false })
-local scout_safepoint_hs = ui.add_combo_box('Scout HS/FL/FD Safepoints', 'scout_safepoint_hs', {'default', 'prefer', 'force'}, 0)
-local scout_headscale_hs = ui.add_slider_int('Scout HS/FL/FD Head Scale', 'scout_headscale_hs', 0, 100, 0)
-local scout_bodyscale_hs = ui.add_slider_int('Scout HS/FL/FD Body Scale', 'scout_bodyscale_hs', 0, 100, 0)
-local scout_hitchance_hs = ui.add_slider_int('Scout HS/FL/FD HitChance', 'scout_hitchance_hs', 0, 100, 0)
-local scout_safepoint_noscope_dt = ui.add_combo_box('Scout DT NoScope Safepoints', 'scout_safepoint_noscope_dt', {'default', 'prefer', 'force'}, 0)
-local scout_headscale_noscope_dt = ui.add_slider_int('Scout DT NoScope Head Scale', 'scout_headscale_noscope_dt', 0, 100, 0)
-local scout_bodyscale_noscope_dt = ui.add_slider_int('Scout DT NoScope Body Scale', 'scout_bodyscale_noscope_dt', 0, 100, 0)
-local scout_hitchance_noscope_dt = ui.add_slider_int('Scout DT NoScope HitChance', 'scout_hitchance_noscope_dt', 0, 100, 0)
-local scout_safepoint_dt = ui.add_combo_box('Scout DT Safepoints', 'scout_safepoint_dt', {'default', 'prefer', 'force'}, 0)
-local scout_headscale_dt = ui.add_slider_int('Scout DT Head Scale', 'scout_headscale_dt', 0, 100, 0)
-local scout_bodyscale_dt = ui.add_slider_int('Scout DT Body Scale', 'scout_bodyscale_dt', 0, 100, 0)
-local scout_hitchance_dt = ui.add_slider_int('Scout DT HitChance', 'scout_hitchance_dt', 0, 100, 0)
+scout_hitscan_hs = ui.add_multi_combo_box('Scout HS/FL/FD Hitscan', 'scout_hitscan_hs', hitscan, { false, false, false, false, false, false })
+scout_hitscan_noscope_dt = ui.add_multi_combo_box('Scout DT NoScope Hitscan', 'scout_hitscan_noscope_dt', hitscan, { false, false, false, false, false, false })
+scout_hitscan_dt = ui.add_multi_combo_box('Scout DT Hitscan', 'scout_hitscan_dt', hitscan, { false, false, false, false, false, false })
+scout_safepoint_hs = ui.add_combo_box('Scout HS/FL/FD Safepoints', 'scout_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+scout_headscale_hs = ui.add_slider_int('Scout HS/FL/FD Head Scale', 'scout_headscale_hs', 0, 100, 0)
+scout_bodyscale_hs = ui.add_slider_int('Scout HS/FL/FD Body Scale', 'scout_bodyscale_hs', 0, 100, 0)
+scout_hitchance_hs = ui.add_slider_int('Scout HS/FL/FD HitChance', 'scout_hitchance_hs', 0, 100, 0)
+scout_safepoint_noscope_dt = ui.add_combo_box('Scout DT NoScope Safepoints', 'scout_safepoint_noscope_dt', {'default', 'prefer', 'force'}, 0)
+scout_headscale_noscope_dt = ui.add_slider_int('Scout DT NoScope Head Scale', 'scout_headscale_noscope_dt', 0, 100, 0)
+scout_bodyscale_noscope_dt = ui.add_slider_int('Scout DT NoScope Body Scale', 'scout_bodyscale_noscope_dt', 0, 100, 0)
+scout_hitchance_noscope_dt = ui.add_slider_int('Scout DT NoScope HitChance', 'scout_hitchance_noscope_dt', 0, 100, 0)
+scout_safepoint_dt = ui.add_combo_box('Scout DT Safepoints', 'scout_safepoint_dt', {'default', 'prefer', 'force'}, 0)
+scout_headscale_dt = ui.add_slider_int('Scout DT Head Scale', 'scout_headscale_dt', 0, 100, 0)
+scout_bodyscale_dt = ui.add_slider_int('Scout DT Body Scale', 'scout_bodyscale_dt', 0, 100, 0)
+scout_hitchance_dt = ui.add_slider_int('Scout DT HitChance', 'scout_hitchance_dt', 0, 100, 0)
 
-local scout_hitscan = ui.get_multi_combo_box("rage_scout_hitscan")
-local scout_head = ui.get_slider_int("rage_scout_head_pointscale") 
-local scout_body = ui.get_slider_int("rage_scout_body_pointscale")
-local scout_sp = ui.get_combo_box("rage_scout_safepoints")
-local scout_hitchance = ui.get_slider_int("rage_scout_hitchance")
-local scout_autoscope = ui.get_check_box("rage_scout_autoscope")
+scout_hitscan = ui.get_multi_combo_box("rage_scout_hitscan")
+scout_head = ui.get_slider_int("rage_scout_head_pointscale") 
+scout_body = ui.get_slider_int("rage_scout_body_pointscale")
+scout_sp = ui.get_combo_box("rage_scout_safepoints")
+scout_hitchance = ui.get_slider_int("rage_scout_hitchance")
+scout_autoscope = ui.get_check_box("rage_scout_autoscope")
 
-local scout_hitscan_backup ={}
+scout_hitscan_backup ={}
 scout_head_backup = scout_head:get_value()
 scout_body_backup = scout_body:get_value()
 scout_sp_backup = scout_sp:get_value()
@@ -565,22 +562,22 @@ end
 
 --Pistols
 local pistols_enable = ui.add_check_box("Enable Superior Pistols", "pistols_enable", false)
-local pistols_hitscan_hs = ui.add_multi_combo_box('Pistols HS/FL/FD Hitscan', 'pistols_hitscan_hs', hitscan, { false, false, false, false, false, false })
-local pistols_hitscan_dt = ui.add_multi_combo_box('Pistols DT Hitscan', 'pistols_hitscan_dt', hitscan, { false, false, false, false, false, false })
-local pistols_safepoint_hs = ui.add_combo_box('Pistols HS/FL/FD Safepoints', 'pistols_safepoint_hs', {'default', 'prefer', 'force'}, 0)
-local pistols_headscale_hs = ui.add_slider_int('Pistols HS/FL/FD Head Scale', 'pistols_headscale_hs', 0, 100, 0)
-local pistols_bodyscale_hs = ui.add_slider_int('Pistols HS/FL/FD Body Scale', 'pistols_bodyscale_hs', 0, 100, 0)
-local pistols_hitchance_hs = ui.add_slider_int('Pistols HS/FL/FD HitChance', 'pistols_hitchance_hs', 0, 100, 0)
-local pistols_safepoint_dt = ui.add_combo_box('Pistols DT Safepoints', 'pistols_safepoint_dt', {'default', 'prefer', 'force'}, 0)
-local pistols_headscale_dt = ui.add_slider_int('Pistols DT Head Scale', 'pistols_headscale_dt', 0, 100, 0)
-local pistols_bodyscale_dt = ui.add_slider_int('Pistols DT Body Scale', 'pistols_bodyscale_dt', 0, 100, 0)
-local pistols_hitchance_dt = ui.add_slider_int('Pistols DT HitChance', 'pistols_hitchance_dt', 0, 100, 0)
+pistols_hitscan_hs = ui.add_multi_combo_box('Pistols HS/FL/FD Hitscan', 'pistols_hitscan_hs', hitscan, { false, false, false, false, false, false })
+pistols_hitscan_dt = ui.add_multi_combo_box('Pistols DT Hitscan', 'pistols_hitscan_dt', hitscan, { false, false, false, false, false, false })
+pistols_safepoint_hs = ui.add_combo_box('Pistols HS/FL/FD Safepoints', 'pistols_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+pistols_headscale_hs = ui.add_slider_int('Pistols HS/FL/FD Head Scale', 'pistols_headscale_hs', 0, 100, 0)
+pistols_bodyscale_hs = ui.add_slider_int('Pistols HS/FL/FD Body Scale', 'pistols_bodyscale_hs', 0, 100, 0)
+pistols_hitchance_hs = ui.add_slider_int('Pistols HS/FL/FD HitChance', 'pistols_hitchance_hs', 0, 100, 0)
+pistols_safepoint_dt = ui.add_combo_box('Pistols DT Safepoints', 'pistols_safepoint_dt', {'default', 'prefer', 'force'}, 0)
+pistols_headscale_dt = ui.add_slider_int('Pistols DT Head Scale', 'pistols_headscale_dt', 0, 100, 0)
+pistols_bodyscale_dt = ui.add_slider_int('Pistols DT Body Scale', 'pistols_bodyscale_dt', 0, 100, 0)
+pistols_hitchance_dt = ui.add_slider_int('Pistols DT HitChance', 'pistols_hitchance_dt', 0, 100, 0)
 
-local pistols_hitscan = ui.get_multi_combo_box("rage_pistols_hitscan")
-local pistols_head = ui.get_slider_int("rage_pistols_head_pointscale")
-local pistols_body = ui.get_slider_int("rage_pistols_body_pointscale")
-local pistols_sp = ui.get_combo_box("rage_pistols_safepoints")
-local pistols_hitchance = ui.get_slider_int("rage_pistols_hitchance")
+pistols_hitscan = ui.get_multi_combo_box("rage_pistols_hitscan")
+pistols_head = ui.get_slider_int("rage_pistols_head_pointscale")
+pistols_body = ui.get_slider_int("rage_pistols_body_pointscale")
+pistols_sp = ui.get_combo_box("rage_pistols_safepoints")
+pistols_hitchance = ui.get_slider_int("rage_pistols_hitchance")
 
 pistols_hitscan_backup ={}
 pistols_head_backup = pistols_head:get_value()
@@ -593,24 +590,24 @@ end
 
 --Deagle
 local deagle_enable = ui.add_check_box("Enable Superior Deagle", "deagle_enable", false)
-local deagle_hitscan_hs = ui.add_multi_combo_box('Deagle HS/FL/FD Hitscan', 'deagle_hitscan_hs', hitscan, { false, false, false, false, false, false })
-local deagle_hitscan_dt = ui.add_multi_combo_box('Deagle DT Hitscan', 'deagle_hitscan_dt', hitscan, { false, false, false, false, false, false })
-local deagle_safepoint_hs = ui.add_combo_box('Deagle HS/FL/FD Safepoints', 'deagle_safepoint_hs', {'default', 'prefer', 'force'}, 0)
-local deagle_headscale_hs = ui.add_slider_int('Deagle HS/FL/FD Head Scale', 'deagle_headscale_hs', 0, 100, 0)
-local deagle_bodyscale_hs = ui.add_slider_int('Deagle HS/FL/FD Body Scale', 'deagle_bodyscale_hs', 0, 100, 0)
-local deagle_hitchance_hs = ui.add_slider_int('Deagle HS/FL/FD HitChance', 'deagle_hitchance_hs', 0, 100, 0)
-local deagle_safepoint_dt = ui.add_combo_box('Deagle DT Safepoints', 'deagle_safepoint_dt', {'default', 'prefer', 'force'}, 0)
-local deagle_headscale_dt = ui.add_slider_int('Deagle DT Head Scale', 'deagle_headscale_dt', 0, 100, 0)
-local deagle_bodyscale_dt = ui.add_slider_int('Deagle DT Body Scale', 'deagle_bodyscale_dt', 0, 100, 0)
-local deagle_hitchance_dt = ui.add_slider_int('Deagle DT HitChance', 'deagle_hitchance_dt', 0, 100, 0)
+deagle_hitscan_hs = ui.add_multi_combo_box('Deagle HS/FL/FD Hitscan', 'deagle_hitscan_hs', hitscan, { false, false, false, false, false, false })
+deagle_hitscan_dt = ui.add_multi_combo_box('Deagle DT Hitscan', 'deagle_hitscan_dt', hitscan, { false, false, false, false, false, false })
+deagle_safepoint_hs = ui.add_combo_box('Deagle HS/FL/FD Safepoints', 'deagle_safepoint_hs', {'default', 'prefer', 'force'}, 0)
+deagle_headscale_hs = ui.add_slider_int('Deagle HS/FL/FD Head Scale', 'deagle_headscale_hs', 0, 100, 0)
+deagle_bodyscale_hs = ui.add_slider_int('Deagle HS/FL/FD Body Scale', 'deagle_bodyscale_hs', 0, 100, 0)
+deagle_hitchance_hs = ui.add_slider_int('Deagle HS/FL/FD HitChance', 'deagle_hitchance_hs', 0, 100, 0)
+deagle_safepoint_dt = ui.add_combo_box('Deagle DT Safepoints', 'deagle_safepoint_dt', {'default', 'prefer', 'force'}, 0)
+deagle_headscale_dt = ui.add_slider_int('Deagle DT Head Scale', 'deagle_headscale_dt', 0, 100, 0)
+deagle_bodyscale_dt = ui.add_slider_int('Deagle DT Body Scale', 'deagle_bodyscale_dt', 0, 100, 0)
+deagle_hitchance_dt = ui.add_slider_int('Deagle DT HitChance', 'deagle_hitchance_dt', 0, 100, 0)
 
-local deagle_hitscan = ui.get_multi_combo_box("rage_deagle_hitscan")
-local deagle_head = ui.get_slider_int("rage_deagle_head_pointscale")
-local deagle_body = ui.get_slider_int("rage_deagle_body_pointscale")
-local deagle_sp = ui.get_combo_box("rage_deagle_safepoints")
-local deagle_hitchance = ui.get_slider_int("rage_deagle_hitchance")
+deagle_hitscan = ui.get_multi_combo_box("rage_deagle_hitscan")
+deagle_head = ui.get_slider_int("rage_deagle_head_pointscale")
+deagle_body = ui.get_slider_int("rage_deagle_body_pointscale")
+deagle_sp = ui.get_combo_box("rage_deagle_safepoints")
+deagle_hitchance = ui.get_slider_int("rage_deagle_hitchance")
 
-local deagle_hitscan_backup ={}
+deagle_hitscan_backup ={}
 deagle_head_backup = deagle_head:get_value()
 deagle_body_backup = deagle_body:get_value()
 deagle_sp_backup = deagle_sp:get_value()
@@ -1204,16 +1201,16 @@ client.register_callback('create_move', deaglehit_hitscan)
 	}
 
 	local binds = {
-		{ name = 'XT',                  cfg = ui.get_slider_int('misc_ping_spike_amount'),      type = 'slider_int', disable_val = 0 },
+		{ name = 'PING',                cfg = ui.get_slider_int('misc_ping_spike_amount'),      type = 'slider_int', disable_val = 0 },
 		{ name = 'FD',                  cfg = ui.get_key_bind('antihit_extra_fakeduck_bind'),   type = 'key_bind' },
 		{ name = 'AP',                  cfg = lua_re_autopeek,               type = 'key_bind' },
 		{ name = 'Only Head',           cfg = lua_re_onlyhead_bind,          type = 'key_bind' },
 		{ name = 'BAIM',                cfg = lua_re_baim_bind,              type = 'key_bind' },
 		{ name = 'LAIM',                cfg = lua_re_laim_bind,              type = 'key_bind' },
+		{ name = 'SP',    			 	cfg = lua_re_safepoints_bind,        type = 'key_bind' },
 		{ name = 'Lethal',              cfg = lua_re_lethal_bind,            type = 'key_bind' },
 		{ name = 'MinDmg',     			cfg = lua_re_mindmg_bind,       	 type = 'key_bind' },
-		{ name = 'Force Safepoint',     cfg = lua_re_safepoints_bind,        type = 'key_bind' },
-		{ name = 'Damage Override',     cfg = lua_re_dmgoverride_bind,       type = 'key_bind' },
+		{ name = 'DMG  -->',     		cfg = lua_re_dmgoverride_bind,       type = 'key_bind' },
 		{ name = 'Resolver Override',   cfg = lua_re_resolver_override_bind, type = 'key_bind' },
 		{ name = exploit_names,         cfg = ui.get_key_bind('rage_active_exploit_bind'),      type = 'key_bind' },
 		{ name = 'FL',                  type = 'static' },
@@ -1252,8 +1249,8 @@ client.register_callback('create_move', deaglehit_hitscan)
 			
             renderer.filled_polygon({ vec2_t.new(x1_outer, y1_outer),vec2_t.new(x2_outer, y2_outer),vec2_t.new(x1_inner, y1_inner) },color)
             renderer.filled_polygon({ vec2_t.new(x1_inner, y1_inner),vec2_t.new(x2_outer, y2_outer),vec2_t.new(x2_inner, y2_inner) },color)
-    end
-end
+    	end
+	end
 
 	local function draw_indicators()
 		local x = x_slider:get_value()
@@ -1261,11 +1258,13 @@ end
 
 		local y = 30 * #indicators
 
+		local lua_re_dmgoverride_value = lua_re_dmgoverride:get_value()
+
 		for key, value in pairs(indicators) do
 			local addition = 6
 
 			local sizes = renderer.get_text_size(fonts.tohomabd, 30, value.text)
-			
+
 			render_text(value.text, x, h - y, value.color)
 
 			addition = addition + sizes.y
@@ -1276,11 +1275,17 @@ end
 			
 				render_arc(x + 58, h - y + addition - 20, 12, 8, 0, 360, 50, color_t.new(0, 0, 0, 150))
 				render_arc(x + 58, h - y + addition - 20, 11.5, 8, 90, fill * 13, 50, bar.color)
+			end
 
+			if value.DMG then
+				local DMG = value.DMG
+				render_text(lua_re_dmgoverride_value, x + 130, h - y, DMG.color)
 			end
 
 			y = y - addition
 		end
+
+		
 	end
 
 	local function to_percent(a, b)
@@ -1288,8 +1293,8 @@ end
 	end
 
 	local function p2c(per, alpha)
-		local red = per < 50 and 200 or math.floor(200 - (per * 2 - 100) * 200 / 100);
-		local green = per > 50 and 200 or math.floor((per * 2) * 200 / 100);
+		local red = per < 50 and 255 or math.floor(255 - (per * 2 - 100) * 255 / 100);
+		local green = per > 50 and 255 or math.floor((per * 2) * 255 / 100);
 
 		return color_t.new(red, green, 13, alpha or 255);
 	end
@@ -1349,6 +1354,12 @@ end
 							text = name,
 							color = color_t.new(0, 255, 0, 255)
 						}
+
+						if name == 'DMG  -->' then
+							information.DMG = {
+								color = color_t.new(0, 255, 0, 255)
+							}
+						end
 
 						if name == 'DT' then
 							local active_weapon = player:get_prop_int(m_hActiveWeapon)
@@ -1439,10 +1450,6 @@ end
 	end
 
 	local WINDOW_WIDTH = 210
-
-	local function on_object(mx, my, pos_x, pos_y, w, h)
-		return mx <= pos_x + w and mx >= pos_x and my <= pos_y + h and my >= pos_y
-	end
 
 	local function get_hitgroup(index)
 	
