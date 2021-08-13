@@ -1721,6 +1721,8 @@ client.register_callback('create_move', deaglehit_hitscan)
 	local time_start = math.floor(globalvars.get_tick_count())
 
 	local function fakelag_chock()
+		local player = entitylist.get_local_player()
+
 		for i = 1, 64 do
 			chocked_fl = clientstate.get_choked_commands()
 
@@ -1800,7 +1802,13 @@ client.register_callback('create_move', deaglehit_hitscan)
 			end
 
 			First_CK = chocked_fl
+
+			if not engine.is_in_game() or not player or not player:is_alive() then
+				i = 1
+			end
+
 		end
+
 	end
 
 	local antihit_fakelag_limit = ui.get_slider_int('antihit_fakelag_limit')
@@ -2143,7 +2151,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 	--Keybinds & Watermark
 	--Nixware watermark
-	local lua_re_watermark_enabled = ui.add_check_box("Enable Watermark", "lua_re_watermark_enabled", true)
+	local lua_re_watermark_enabled = ui.add_check_box("Enable Watermark", "lua_re_watermark_enabled", false)
 
 	local pos, pos2 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
 	local pos3, pos4 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
