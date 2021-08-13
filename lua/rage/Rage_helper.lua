@@ -1407,14 +1407,56 @@ client.register_callback('create_move', deaglehit_hitscan)
 		return ffi.cast("struct WeaponInfo_t*", weapon_info_pattern(ffi.cast("void*", weapon:get_address())))
 	end
 
-
 	local function get_current_weapon()
 		if not entitylist.get_local_player() or not entitylist.get_local_player():is_alive() then return end
 
 		local current_weapon = entitylist.get_entity_from_handle(entitylist.get_local_player():get_prop_int(m_hActiveWeapon))
 		local current_weapon_name = ffi.string(utils_get_weapon_info(current_weapon).weapon_name)
-
+		
 		return current_weapon_name
+	end
+
+	--Some accidents
+	local function is_deagle()
+		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
+		local active_weapon = entitylist.get_entity_from_handle(handle)
+		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 262145 then return false end
+		return true
+	end
+
+	local function is_revolver()
+		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
+		local active_weapon = entitylist.get_entity_from_handle(handle)
+		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 262208 then return false end
+		return true
+	end
+
+	local function is_USP_SILENCER()
+		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
+		local active_weapon = entitylist.get_entity_from_handle(handle)
+		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 262205 then return false end
+		return true
+	end
+
+	local function is_P2000()
+		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
+		local active_weapon = entitylist.get_entity_from_handle(handle)
+		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 32 then return false end
+		return true
+	end
+
+	local function is_CZ75A()
+		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
+		local active_weapon = entitylist.get_entity_from_handle(handle)
+		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 262207 then return false end
+		return true
+	end
+
+	local function is_P250()
+		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
+		local active_weapon = entitylist.get_entity_from_handle(handle)
+		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 36 then return false end
+		return true
 	end
 
 	local Weapon_value = ''
@@ -1426,7 +1468,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			Weapon_value = 'None'
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
-		elseif get_current_weapon() == 'weapon_deagle' then
+		elseif is_deagle() then
 			Weapon_value = 'Deagle'
 			lua_re_defdmg_value = ui.get_slider_int("rage_deagle_min_damage"):get_value()
 			lua_re_mindmg_value = deagle_mindmg:get_value()
@@ -1471,7 +1513,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
 			lua_re_mindmg_value = rifle_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_m4a1' then
-			Weapon_value = 'M4A1'
+			Weapon_value = 'M4A1-S'
 			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
 			lua_re_mindmg_value = rifle_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_mac10' then
@@ -1487,7 +1529,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
 			lua_re_mindmg_value = smg_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_ump45' then
-			Weapon_value = 'UMP45'
+			Weapon_value = 'UMP-45'
 			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
 			lua_re_mindmg_value = smg_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_xm1014' then
@@ -1499,7 +1541,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
 			lua_re_mindmg_value = smg_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_mag7' then
-			Weapon_value = 'MAG7'
+			Weapon_value = 'MAG-7'
 			lua_re_defdmg_value = ui.get_slider_int("rage_shotguns_min_damage"):get_value()
 			lua_re_mindmg_value = shotguns_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_negev' then
@@ -1511,14 +1553,14 @@ client.register_callback('create_move', deaglehit_hitscan)
 			lua_re_defdmg_value = ui.get_slider_int("rage_shotguns_min_damage"):get_value()
 			lua_re_mindmg_value = shotguns_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_tec9' then
-			Weapon_value = 'Tec9'
+			Weapon_value = 'Tec-9'
 			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
 			lua_re_mindmg_value = pistols_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_taser' then
 			Weapon_value = 'Taser'
 			lua_re_defdmg_value = ui.get_slider_int("rage_taser_min_damage"):get_value()
 			lua_re_mindmg_value = taser_mindmg:get_value()
-		elseif get_current_weapon() == 'weapon_hkp2000' then
+		elseif is_P2000() then
 			Weapon_value = 'P2000'
 			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
 			lua_re_mindmg_value = pistols_mindmg:get_value()
@@ -1534,20 +1576,20 @@ client.register_callback('create_move', deaglehit_hitscan)
 			Weapon_value = 'Nova'
 			lua_re_defdmg_value = ui.get_slider_int("rage_shotguns_min_damage"):get_value()
 			lua_re_mindmg_value = shotguns_mindmg:get_value()
-		elseif get_current_weapon() == 'weapon_p250' then
+		elseif is_P250() then
 			Weapon_value = 'P250'
 			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
 			lua_re_mindmg_value = pistols_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_scar20' then
-			Weapon_value = 'SCAR20'
+			Weapon_value = 'SCAR-20'
 			lua_re_defdmg_value = ui.get_slider_int("rage_auto_min_damage"):get_value()
 			lua_re_mindmg_value = auto_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_sg556' then
-			Weapon_value = 'SG553'
+			Weapon_value = 'SG 553'
 			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
 			lua_re_mindmg_value = rifle_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_ssg08' then
-			Weapon_value = 'SSG08'
+			Weapon_value = 'SSG 08'
 			lua_re_defdmg_value = ui.get_slider_int("rage_scout_min_damage"):get_value()
 			lua_re_mindmg_value = scout_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_flashbang' then
@@ -1555,11 +1597,11 @@ client.register_callback('create_move', deaglehit_hitscan)
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
 		elseif get_current_weapon() == 'weapon_hegrenade' then
-			Weapon_value = 'HEGrenade'
+			Weapon_value = 'HE Grenade'
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
 		elseif get_current_weapon() == 'weapon_smokegrenade' then
-			Weapon_value = 'SmokeGrenade'
+			Weapon_value = 'Smoke Grenade'
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
 		elseif get_current_weapon() == 'weapon_molotov' then
@@ -1571,7 +1613,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
 		elseif get_current_weapon() == 'weapon_incgrenade' then
-			Weapon_value = 'INCGrenade'
+			Weapon_value = 'Inc Grenade'
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
 		elseif get_current_weapon() == 'weapon_c4' then
@@ -1582,19 +1624,15 @@ client.register_callback('create_move', deaglehit_hitscan)
 			Weapon_value = 'Healthshot'
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
-		elseif get_current_weapon() == 'weapon_m4a1_silencer' then
-			Weapon_value = 'M4A1_S'
-			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
-			lua_re_mindmg_value = rifle_mindmg:get_value()
-		elseif get_current_weapon() == 'weapon_usp_silencer' then
-			Weapon_value = 'USP_S'
+		elseif is_USP_SILENCER() then
+			Weapon_value = 'USP-S'
 			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
 			lua_re_mindmg_value = pistols_mindmg:get_value()
-		elseif get_current_weapon() == 'weapon_cz75a' then
+		elseif is_CZ75A() then
 			Weapon_value = 'CZ75'
 			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
 			lua_re_mindmg_value = pistols_mindmg:get_value()
-		elseif get_current_weapon() == 'weapon_revolver' then
+		elseif is_revolver() then
 			Weapon_value = 'Revolver'
 			lua_re_defdmg_value = ui.get_slider_int("rage_revolver_min_damage"):get_value()
 			lua_re_mindmg_value = revolver_mindmg:get_value()
@@ -1803,9 +1841,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 			First_CK = chocked_fl
 
-			if not engine.is_in_game() or not player or not player:is_alive() then
-				i = 1
-			end
+			--print(tostring(i))
 
 		end
 
@@ -2149,12 +2185,12 @@ client.register_callback('create_move', deaglehit_hitscan)
 		}
 	end
 
-	--Keybinds & Watermark
+	--Keybinds & Watermark with Fake Angle
 	--Nixware watermark
 	local lua_re_watermark_enabled = ui.add_check_box("Enable Watermark", "lua_re_watermark_enabled", false)
 
 	local pos, pos2 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
-	local pos3, pos4 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
+	local pos3, pos4 = vec2_t.new(screen.x - 125, 40), vec2_t.new(screen.x - 5, 65)
 	
 	local function get_fps()
 		frametime = globalvars.get_frame_time()
@@ -2183,7 +2219,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		local username = client.get_username()
 		return username
 	end
-	это хуета робит но я ее убрал из-за неизвестных размерах вашего никнайма
+	this fucking robs, but I removed it because of the unknown size of your nickname
 	 ]]--
 
 	local function get_tickr()
@@ -2191,24 +2227,137 @@ client.register_callback('create_move', deaglehit_hitscan)
 		return tickr
 	end
 
+	--Fake Angle
+	local function lua_re_fake_angle()
+		ffi.cdef[[
+
+			struct Animstate_t
+			{
+				char pad[ 3 ];
+				char m_bForceWeaponUpdate; //0x4
+				char pad1[ 91 ];
+				void* m_pBaseEntity; //0x60
+				void* m_pActiveWeapon; //0x64
+				void* m_pLastActiveWeapon; //0x68
+				float m_flLastClientSideAnimationUpdateTime; //0x6C
+				int m_iLastClientSideAnimationUpdateFramecount; //0x70
+				float m_flAnimUpdateDelta; //0x74
+				float m_flEyeYaw; //0x78
+				float m_flPitch; //0x7C
+				float m_flGoalFeetYaw; //0x80
+				float m_flCurrentFeetYaw; //0x84
+				float m_flCurrentTorsoYaw; //0x88
+				float m_flUnknownVelocityLean; //0x8C
+				float m_flLeanAmount; //0x90
+				char pad2[ 4 ];
+				float m_flFeetCycle; //0x98
+				float m_flFeetYawRate; //0x9C
+				char pad3[ 4 ];
+				float m_fDuckAmount; //0xA4
+				float m_fLandingDuckAdditiveSomething; //0xA8
+				char pad4[ 4 ];
+				float m_vOriginX; //0xB0
+				float m_vOriginY; //0xB4
+				float m_vOriginZ; //0xB8
+				float m_vLastOriginX; //0xBC
+				float m_vLastOriginY; //0xC0
+				float m_vLastOriginZ; //0xC4
+				float m_vVelocityX; //0xC8
+				float m_vVelocityY; //0xCC
+				char pad5[ 4 ];
+				float m_flUnknownFloat1; //0xD4
+				char pad6[ 8 ];
+				float m_flUnknownFloat2; //0xE0
+				float m_flUnknownFloat3; //0xE4
+				float m_flUnknown; //0xE8
+				float m_flSpeed2D; //0xEC
+				float m_flUpVelocity; //0xF0
+				float m_flSpeedNormalized; //0xF4
+				float m_flFeetSpeedForwardsOrSideWays; //0xF8
+				float m_flFeetSpeedUnknownForwardOrSideways; //0xFC
+				float m_flTimeSinceStartedMoving; //0x100
+				float m_flTimeSinceStoppedMoving; //0x104
+				bool m_bOnGround; //0x108
+				bool m_bInHitGroundAnimation; //0x109
+				float m_flTimeSinceInAir; //0x10A
+				float m_flLastOriginZ; //0x10E
+				float m_flHeadHeightOrOffsetFromHittingGroundAnimation; //0x112
+				float m_flStopToFullRunningFraction; //0x116
+				char pad7[ 4 ]; //0x11A
+				float m_flMagicFraction; //0x11E
+				char pad8[ 60 ]; //0x122
+				float m_flWorldForce; //0x15E
+				char pad9[ 462 ]; //0x162
+				float m_flMaxYaw; //0x334
+			};
+		]]
+
+
+		function UTILS_GetAnimState()
+
+			return ffi.cast("struct Animstate_t**", entitylist.get_local_player():get_address() + 0x3914)[0]
+		end
+
+
+		function ANTIAIM_GetMaxDesyncDelta(entity)
+			
+			local animstate = UTILS_GetAnimState()
+
+			if (not animstate) then
+
+				return 0
+			end
+			
+			local flRunningSpeed = math.max(0, math.min(animstate.m_flFeetSpeedForwardsOrSideWays))
+			local flYawModifier = (((animstate.m_flStopToFullRunningFraction * -0.3) - 0.2) * flRunningSpeed) + 1.0
+
+			if (animstate.m_fDuckAmount > 0) then
+				
+				local speedfactor = math.max(0, math.min(1, animstate.m_flFeetSpeedUnknownForwardOrSideways))
+				flYawModifier = flYawModifier + ((animstate.m_fDuckAmount * speedfactor) * (0.5 - flYawModifier))
+			end
+			
+			return ffi.cast("float*", ffi.cast("int*", entity:get_address() + 0x3914)[0] + 0x334)[0] * flYawModifier
+		end
+	end
+
 	local function watermark()
 		renderer.filled_polygon({ vec2_t.new(screen.x - 360, 6), vec2_t.new(screen.x - 325, 30), vec2_t.new(screen.x - 325, 6) }, color_t.new(30,30,30,255)) --0 25 25
 		local inner_pos1, inner_pos2 = vec2_t.new(screen.x - 300, 15), vec2_t.new(screen.x - 100, 65)
 		renderer.rect_filled(pos, pos2, color_t.new(30,30,30,255))
 			
-		--renderer.rect(pos, pos2, color_t.new(15,15,15,255)) --отрисовка говна рамки
+		--renderer.rect(pos, pos2, color_t.new(15,15,15,255)) --drawing shit frame
 		--renderer.rect_filled(inner_pos1, inner_pos2, color_t.new(20,20,20,255))
 		--renderer.rect(inner_pos1, inner_pos2, color_t.new(15,15,15,255))
 		
-		local fpos1, fpos2 = vec2_t.new(screen.x - 360, 3), vec2_t.new(screen.x - 5, 6) -- отрисовка разно цеветной линии
+		local fpos1, fpos2 = vec2_t.new(screen.x - 360, 3), vec2_t.new(screen.x - 5, 6) -- drawing a different line
 		renderer.rect_filled_fade(fpos1, fpos2, color_t.new(243, 0, 255, 255), color_t.new(255, 243, 77, 255), color_t.new(255, 243, 77, 255), color_t.new(243, 0, 255, 255))
-			
-		--local npos, nposs = vec2_t.new(screen.x - 160, 17), vec2_t.new(screen.x - 159, 18) --отрисовка тега чита
+				
+		--local npos, nposs = vec2_t.new(screen.x - 160, 17), vec2_t.new(screen.x - 159, 18) --drawing the cheat tag
 		--renderer.text("NIXWARE", fonts.verdana_watermark, nposs, 13, color_t.new(0, 0, 0, 255))
 		--renderer.text("NIXWARE", fonts.verdana_watermark, npos, 13, color_t.new(255, 255, 255, 255))
 		
-		local fpos = vec2_t.new(screen.x - 325, 10) --корды отрисовки текста
-		renderer.text("nixware.cc | " .. get_tickr() .. " tick | " .. get_time() ..  " | PING: " .. get_ping() .. " | FPS:" .. get_fps(), fonts.verdana_watermark, fpos, 13, color_t.new(255, 255, 255, 255))
+		local fpos_1 = vec2_t.new(screen.x - 325, 10) -- cord drawing text
+		renderer.text("nixware.cc | " .. get_tickr() .. " tick | " .. get_time() ..  " | PING: " .. get_ping() .. " | FPS:" .. get_fps(), fonts.verdana_watermark, fpos_1, 13, color_t.new(255, 255, 255, 255))
+		
+		if engine.is_in_game() then
+			renderer.filled_polygon({ vec2_t.new(screen.x - 160, 41), vec2_t.new(screen.x - 125, 65), vec2_t.new(screen.x - 125, 41) }, color_t.new(30,30,30,255))
+			renderer.rect_filled(pos3, pos4, color_t.new(30,30,30,255))
+
+			local fpos3, fpos4 = vec2_t.new(screen.x - 160, 38), vec2_t.new(screen.x - 5, 41)
+			renderer.rect_filled_fade(fpos3, fpos4, color_t.new(243, 0, 255, 255), color_t.new(255, 243, 77, 255), color_t.new(255, 243, 77, 255), color_t.new(243, 0, 255, 255))
+
+			local fpos_2 = vec2_t.new(screen.x - 125, 45)
+			local fake_angle_value = math.ceil(ANTIAIM_GetMaxDesyncDelta(entitylist.get_local_player()))
+			if ANTIAIM_GetMaxDesyncDelta(entitylist.get_local_player()) < 0 then
+				fake_angle_value = 0
+			end
+			
+			local fpos_3 = vec2_t.new(screen.x - 64, 45)
+			local fakelag_value = clientstate.get_choked_commands()
+			renderer.text("Fake: " .. tostring(fake_angle_value) .. "°", fonts.verdana_watermark, fpos_2, 13, color_t.new(255, 255, 255, 255))
+			renderer.text("| FL: " .. fakelag_value, fonts.verdana_watermark, fpos_3, 13, color_t.new(255, 255, 255, 255))
+		end
 	end
 
 	
@@ -2369,11 +2518,11 @@ client.register_callback('create_move', deaglehit_hitscan)
 	client.register_callback("create_move", get_current_weapon)
 	client.register_callback("create_move", show_current_weapon)
 	client.register_callback("create_move", fakelag_chock)
+	client.register_callback("create_move", lua_re_fake_angle)
 	client.register_callback("paint", on_paint_indicators)
 	client.register_callback("paint", on_paint_hitlist)
-	client.register_callback("shot_fired", hitlist)
 	client.register_callback("paint", draw_watermark)
-
+	client.register_callback("shot_fired", hitlist)
 
 
 -- Menu
