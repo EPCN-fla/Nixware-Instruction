@@ -1,9 +1,9 @@
 local ToggleList = ui.add_multi_combo_box("Buy List Type", "ToggleList", { "Buy List", "Logs", "In TAB (Soon)" }, { true, false, false })
 
-local color_line = ui.add_color_edit('color edit', 'color_line', false, color_t.new(255, 255, 255, 255))
+local buylist_color_line = ui.add_color_edit('color edit', 'buylist_color_line', false, color_t.new(255, 255, 255, 255))
 
-x = 0
-y = 600
+x = 185
+y = 650
 w = 130
 h = 25
 custom_w = 130
@@ -22,7 +22,7 @@ local icons = renderer.setup_font("C:/windows/fonts/csgo_icons.ttf", 25, 0)
 
 local m_iTeamNum = se.get_netvar("DT_BaseEntity", "m_iTeamNum")
 
-client.register_callback("paint", function()
+local function on_paint_buylist()
 	--if not ToggleList:get_value(0) or not engine.is_connected() then return end	
 	--ALPHA
 	if Timer > globalvars.get_current_time() or ui.is_visible() then
@@ -52,7 +52,7 @@ client.register_callback("paint", function()
 	renderer.rect(vec2_t.new(x + 1, y - 16 + 1), vec2_t.new(x + custom_w - 1, y + custom_h - 1), color_t.new(75, 75, 75, g_Alpha))
 	renderer.rect(vec2_t.new(x + 2, y - 16 + 2), vec2_t.new(x + custom_w - 2, y + custom_h - 2), color_t.new(75, 75, 75, g_Alpha))
 	--LEBEL
-	local colorline = color_line:get_value()
+	local colorline = buylist_color_line:get_value()
 
 	local r = colorline.r
 	local g = colorline.g
@@ -116,7 +116,11 @@ client.register_callback("paint", function()
 	else
 		MoveIt = 0
 	end
-end)
+
+end
+
+client.register_callback('paint', on_paint_buylist)
+
 
 client.register_callback("fire_game_event", function(event) 
     if event:get_name() ~= "round_start" then return end
