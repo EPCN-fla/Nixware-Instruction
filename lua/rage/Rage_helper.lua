@@ -5,71 +5,26 @@
 		RageEssentials.lua(https://nixware.cc/threads/16812/);
 		Indicators.lua(https://nixware.cc/threads/12008/);
 		simple_hitlist.lua(https://nixware.cc/threads/14831/);
-		DT Helper.lua(https://nixware.cc/threads/15098/)
+		DT Helper.lua(https://nixware.cc/threads/15098/);
+		watermark.lua(https://nixware.cc/threads/14858/);
+		and many other scripts
 --]]
 
 require 'AdvancedAPI'
 
-ffi.cdef[[
-	struct WeaponInfo_t
-	{
-		char _0x0000[20];
-		__int32 max_clip;	
-		char _0x0018[12];
-		__int32 max_reserved_ammo;
-		char _0x0028[96];
-		char* hud_name;			
-		char* weapon_name;		
-		char _0x0090[60];
-		__int32 type;			
-		__int32 price;			
-		__int32 reward;			
-		char _0x00D8[20];
-		bool full_auto;		
-		char _0x00ED[3];
-		__int32 damage;			
-		float armor_ratio;		 
-		__int32 bullets;	
-		float penetration;	
-		char _0x0100[8];
-		float range;			
-		float range_modifier;	
-		char _0x0110[16];
-		bool silencer;			
-		char _0x0121[15];
-		float max_speed;		
-		float max_speed_alt;
-		char _0x0138[76];
-		__int32 recoil_seed;
-		char _0x0188[32];
-	};
-]]
-
-local weapon_data_call = ffi.cast("int*(__thiscall*)(void*)", client.find_pattern("client.dll", "55 8B EC 81 EC 0C 01 ? ? 53 8B D9 56 57 8D 8B"));
-local function weapon_data(weapon)
-	return ffi.cast("struct WeaponInfo_t*", weapon_data_call(ffi.cast("void*", weapon:get_address())));
-end
 local m_bSpotted = se.get_netvar("DT_BaseEntity", "m_bSpotted")
 local m_vecOrigin = se.get_netvar("DT_BaseEntity", "m_vecOrigin")
 local m_fLastShotTime = se.get_netvar("DT_WeaponCSBase", "m_fLastShotTime")
 local m_iHealth = se.get_netvar("DT_BasePlayer", "m_iHealth")
 local m_vecVelocity = se.get_netvar("DT_BasePlayer", "m_vecVelocity[0]")
 local m_iTeamNum = se.get_netvar("DT_BaseEntity", "m_iTeamNum")
-local m_hActiveWeapon = se.get_netvar("DT_BaseCombatCharacter", "m_hActiveWeapon")
 local m_iItemDefinitionIndex = se.get_netvar("DT_BaseAttributableItem", "m_iItemDefinitionIndex")
 local m_flDuckAmount = se.get_netvar("DT_BasePlayer", "m_flDuckAmount");
 
 local sv_maxunlag = se.get_convar("sv_maxunlag")
 local sv_maxunlag_original = sv_maxunlag:get_float()
 
-local function is_knife()
-	local weapon = entitylist.get_entity_from_handle(entitylist.get_local_player():get_prop_int(se.get_netvar("DT_BaseCombatCharacter", "m_hActiveWeapon")))
-	if weapon_data(weapon).type == 1 then
-		return true
-	end
-	return false
-end
-
+--[[
 
 local m_vecViewOffset = se.get_netvar("DT_BasePlayer", "m_vecViewOffset[0]")
 
@@ -99,6 +54,8 @@ end
 
 local knifebot_attack_time = 0.0
 local knifebot_target = 0
+
+]]--
 
 -- Hitboxes
 
@@ -165,7 +122,7 @@ local SCAN_LEGS = 4
 local SCAN_FOOT = 5
 
 --Main
-local lua_re_menu = ui.add_combo_box("Menu", "lua_menu", { "Rage", "DT/HS/FL/FD", "Visuals" }, 0)
+local lua_re_menu = ui.add_combo_box("Menu", "lua_menu", { "Rage", "MinDmg", "DT/HS/FL/FD", "Visuals" }, 0)
 
 local lua_re_ragelogs = ui.add_check_box("Rage Logs", "lua_re_ragelogs", false)
 local lua_re_votelogs = ui.add_check_box("Vote Logs", "lua_re_votelogs", false)
@@ -184,6 +141,7 @@ local lua_re_safepoints_bind = ui.add_key_bind("Force Safepoints", "lua_re_safep
 local lua_re_lethal_bind = ui.add_key_bind("Force Lethal Shots", "lua_re_lethal_bind", 0, 2)
 local lua_re_mindmg_bind = ui.add_key_bind("Min Damage", "lua_re_mindmg_bind", 0, 2)
 local lua_re_pingspike_bind = ui.add_key_bind("Ping Spike", "lua_re_pingspike_bind", 0, 2)
+local lua_re_pingspike = ui.add_slider_int("Ping Spike Value", "lua_re_pingspike", 0, 200, 0)
 local lua_re_resolver_override_bind = ui.add_key_bind("Resolver Override", "lua_re_resolver_override_bind", 0, 2)
 
 local lua_re_dmgoverride_bind = ui.add_key_bind("Damage Override", "lua_re_dmgoverride_bind", 0, 2)
@@ -310,6 +268,17 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 		if not scale_thirdperson:get_value() and once_thirdperson then 
 			once_thirdperson = not once_thirdperson 
 			se.get_convar("cam_idealdist"):set_int(120) 
+		end
+	end
+
+	local function ping_spike()
+		local ping_spike_amount = ui.get_slider_int("misc_ping_spike_amount")
+		local ping_spike_backup = ping_spike_amount:get_value()
+
+		if lua_re_pingspike_bind:is_active() then
+			ping_spike_amount:set_value(lua_re_pingspike:get_value())
+		else
+			ping_spike_amount:set_value(ping_spike_backup)
 		end
 	end
 
@@ -455,6 +424,7 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 
 	local function on_create_move(cmd)
 		keybinds(cmd)
+		ping_spike()
 		autopeek(cmd)
 		switch_exploit()
 		backtracking()
@@ -481,6 +451,140 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 	client.register_callback("fire_game_event", on_events)
 	client.register_callback("shot_fired", on_shot_fired)
 	client.register_callback("create_move", on_create_move)
+
+
+--MinDmg for all weapons
+
+local lua_re_mindmg_enable = ui.add_check_box('Enable MinDmg', 'lua_re_mindmg_enable', false)
+local lua_re_mindmg_weaponconfig = ui.add_multi_combo_box("Weapon Configs","lua_re_mindmg_weaponconfig", {'Pistols', 'Deagle', 'Revolver', 'Smg', 'Rifle', 'Shotguns', 'Scout', 'Auto', 'Awp', 'Taser'}, { false, false, false, false, false, false, false, false, false, false })
+
+--[[
+local weapon_groups = {
+    'Pistols', 'Deagle', 'Revolver', 'Smg', 'Rifle', 'Shotguns', 'Scout', 'Auto', 'Awp', 'Taser'
+}
+]]--
+
+pistols_mindmg = ui.add_slider_int('Pistols MinDmg', 'pistols_mindmg', 0, 100, 5)
+deagle_mindmg = ui.add_slider_int('Deagle MinDmg', 'deagle_mindmg', 0, 100, 5)
+revolver_mindmg = ui.add_slider_int('Revolver MinDmg', 'revolver_mindmg', 0, 100, 5)
+smg_mindmg = ui.add_slider_int('Smg MinDmg', 'smg_mindmg', 0, 100, 5)
+rifle_mindmg = ui.add_slider_int('Rifle MinDmg', 'rifle_mindmg', 0, 100, 5)
+shotguns_mindmg = ui.add_slider_int('Shotguns MinDmg', 'shotguns_mindmg', 0, 100, 5)
+scout_mindmg = ui.add_slider_int('Scout MinDmg', 'scout_mindmg', 0, 100, 5)
+auto_mindmg = ui.add_slider_int('Auto MinDmg', 'auto_mindmg', 0, 100, 5)
+awp_mindmg = ui.add_slider_int('Awp MinDmg', 'awp_mindmg', 0, 100, 5)
+taser_mindmg = ui.add_slider_int('Taser MinDmg', 'taser_mindmg', 0, 100, 5)
+
+local function mindmg_override()
+	local entity = entitylist.get_players(0)
+
+	for i = 1, #entity do
+		local player = entity[i]
+		if lua_re_mindmg_enable:get_value() and lua_re_mindmg_bind:is_active() then
+			if lua_re_mindmg_weaponconfig:get_value(0) then
+				ragebot.override_min_damage(player:get_index(), pistols_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(1) then
+				ragebot.override_min_damage(player:get_index(), deagle_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(2) then
+				ragebot.override_min_damage(player:get_index(), revolver_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(3) then
+				ragebot.override_min_damage(player:get_index(), smg_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(4) then
+				ragebot.override_min_damage(player:get_index(), rifle_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(5) then
+				ragebot.override_min_damage(player:get_index(), shotguns_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(6) then
+				ragebot.override_min_damage(player:get_index(), scout_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(7) then
+				ragebot.override_min_damage(player:get_index(), auto_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(8) then
+				ragebot.override_min_damage(player:get_index(), awp_mindmg:get_value())
+			elseif lua_re_mindmg_weaponconfig:get_value(9) then
+				ragebot.override_min_damage(player:get_index(), taser_mindmg:get_value())
+			end
+		end
+	end
+end
+
+client.register_callback('create_move', mindmg_override)
+
+local function mindmg_weapon_switch()
+	if lua_re_menu:get_value() == 1 then
+		if lua_re_mindmg_weaponconfig:get_value(0) then
+			pistols_mindmg:set_visible(true)
+		else
+			pistols_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(1) then
+			deagle_mindmg:set_visible(true)
+		else
+			deagle_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(2) then
+			revolver_mindmg:set_visible(true)
+		else
+			revolver_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(3) then
+			smg_mindmg:set_visible(true)
+		else
+			smg_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(4) then
+			rifle_mindmg:set_visible(true)
+		else
+			rifle_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(5) then
+			shotguns_mindmg:set_visible(true)
+		else
+			shotguns_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(6) then
+			scout_mindmg:set_visible(true)
+		else
+			scout_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(7) then
+			auto_mindmg:set_visible(true)
+		else
+			auto_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(8) then
+			awp_mindmg:set_visible(true)
+		else
+			awp_mindmg:set_visible(false)
+		end
+
+		if lua_re_mindmg_weaponconfig:get_value(9) then
+			taser_mindmg:set_visible(true)
+		else
+			taser_mindmg:set_visible(false)
+		end
+	else
+		pistols_mindmg:set_visible(false)
+		deagle_mindmg:set_visible(false)
+		revolver_mindmg:set_visible(false)
+		smg_mindmg:set_visible(false)
+		rifle_mindmg:set_visible(false)
+		shotguns_mindmg:set_visible(false)
+		scout_mindmg:set_visible(false)
+		auto_mindmg:set_visible(false)
+		awp_mindmg:set_visible(false)
+		taser_mindmg:set_visible(false)
+	end
+end
+
+client.register_callback('paint', mindmg_weapon_switch)
+
 
 --DT/HS/FL/FD
 
@@ -544,7 +648,7 @@ scout_bodyscale_dt = ui.add_slider_int('Scout DT Body Scale', 'scout_bodyscale_d
 scout_hitchance_dt = ui.add_slider_int('Scout DT HitChance', 'scout_hitchance_dt', 0, 100, 0)
 
 scout_hitscan = ui.get_multi_combo_box("rage_scout_hitscan")
-scout_head = ui.get_slider_int("rage_scout_head_pointscale") 
+scout_head = ui.get_slider_int("rage_scout_head_pointscale")
 scout_body = ui.get_slider_int("rage_scout_body_pointscale")
 scout_sp = ui.get_combo_box("rage_scout_safepoints")
 scout_hitchance = ui.get_slider_int("rage_scout_hitchance")
@@ -618,7 +722,7 @@ end
 
 
 local function weapon_switch()
-	if lua_re_menu:get_value() == 1 then
+	if lua_re_menu:get_value() == 2 then
 		if lua_re_weaponconfig:get_value() == 0 then
 
 			scar_enable:set_visible(true)
@@ -1189,8 +1293,9 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 	local fonts = {
 		verdana = renderer.setup_font('c:/windows/fonts/verdana.ttf', 12, 0),
+		verdana_watermark = renderer.setup_font('c:/windows/fonts/verdana.ttf', 13, 0),
 		tohomabd = renderer.setup_font('C:/windows/fonts/tahomabd.ttf', 30, 0)
-		} 
+	}
 
 	local indicators = {}
 
@@ -1209,12 +1314,258 @@ client.register_callback('create_move', deaglehit_hitscan)
 		{ name = 'LAIM',                cfg = lua_re_laim_bind,              type = 'key_bind' },
 		{ name = 'SP',    			 	cfg = lua_re_safepoints_bind,        type = 'key_bind' },
 		{ name = 'Lethal',              cfg = lua_re_lethal_bind,            type = 'key_bind' },
-		{ name = 'MinDmg',     			cfg = lua_re_mindmg_bind,       	 type = 'key_bind' },
-		{ name = 'DMG  -->',     		cfg = lua_re_dmgoverride_bind,       type = 'key_bind' },
 		{ name = 'Resolver Override',   cfg = lua_re_resolver_override_bind, type = 'key_bind' },
 		{ name = exploit_names,         cfg = ui.get_key_bind('rage_active_exploit_bind'),      type = 'key_bind' },
+		{ name = 'Weapon ->',           type = 'static' },
+		{ name = 'DMG  ->',             type = 'static' },
 		{ name = 'FL',                  type = 'static' },
 	}
+
+	-- get the weapon
+	ffi.cdef[[
+
+		struct WeaponInfo_t
+		{
+			char _0x0000[20];
+			__int32 max_clip;   
+			char _0x0018[12];
+			__int32 max_reserved_ammo;
+			char _0x0028[96];
+			char* hud_name;           
+			char* weapon_name;       
+			char _0x0090[60];
+			__int32 type;           
+			__int32 price;           
+			__int32 reward;           
+			char _0x00D8[20];
+			bool full_auto;       
+			char _0x00ED[3];
+			__int32 damage;           
+			float armor_ratio;         
+			__int32 bullets;   
+			float penetration;   
+			char _0x0100[8];
+			float range;           
+			float range_modifier;   
+			char _0x0110[16];
+			bool silencer;           
+			char _0x0121[15];
+			float max_speed;       
+			float max_speed_alt;
+			char _0x0138[76];
+			__int32 recoil_seed;
+			char _0x0188[32];
+		};
+	]]
+
+	local weapon_info_pattern = ffi.cast("int*(__thiscall*)(void*)", client.find_pattern("client.dll", "55 8B EC 81 EC ? ? ? ? 53 8B D9 56 57 8D 8B ? ? ? ? 85 C9 75 04"))
+	local m_hActiveWeapon = se.get_netvar("DT_BaseCombatCharacter", "m_hActiveWeapon")
+
+	function utils_get_weapon_info(weapon)
+		return ffi.cast("struct WeaponInfo_t*", weapon_info_pattern(ffi.cast("void*", weapon:get_address())))
+	end
+
+
+	local function get_current_weapon()
+		if not entitylist.get_local_player() or not entitylist.get_local_player():is_alive() then return end
+
+		local current_weapon = entitylist.get_entity_from_handle(entitylist.get_local_player():get_prop_int(m_hActiveWeapon))
+		local current_weapon_name = ffi.string(utils_get_weapon_info(current_weapon).weapon_name)
+
+		return current_weapon_name
+	end
+
+	local Weapon_value = ''
+	local lua_re_defdmg_value = 0
+	local lua_re_mindmg_value = 0
+
+	local function show_current_weapon()
+		if get_current_weapon() == nil then
+			Weapon_value = 'None'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_deagle' then
+			Weapon_value = 'Deagle'
+			lua_re_defdmg_value = ui.get_slider_int("rage_deagle_min_damage"):get_value()
+			lua_re_mindmg_value = deagle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_elite' then
+			Weapon_value = 'Duals'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_fiveseven' then
+			Weapon_value = 'Fiveseven'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_glock' then
+			Weapon_value = 'Glock'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_ak47' then
+			Weapon_value = 'AK47'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_aug' then
+			Weapon_value = 'AUG'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_awp' then
+			Weapon_value = 'AWP'
+			lua_re_defdmg_value = ui.get_slider_int("rage_awp_min_damage"):get_value()
+			lua_re_mindmg_value = awp_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_famas' then
+			Weapon_value = 'Famas'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_g3sg1' then
+			Weapon_value = 'G3SG1'
+			lua_re_defdmg_value = ui.get_slider_int("rage_auto_min_damage"):get_value()
+			lua_re_mindmg_value = auto_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_galilar' then
+			Weapon_value = 'GalilAR'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_m249' then
+			Weapon_value = 'M249'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_m4a1' then
+			Weapon_value = 'M4A1'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_mac10' then
+			Weapon_value = 'MAC10'
+			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
+			lua_re_mindmg_value = smg_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_p90' then
+			Weapon_value = 'P90'
+			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
+			lua_re_mindmg_value = smg_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_mp5sd' then
+			Weapon_value = 'MP5SD'
+			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
+			lua_re_mindmg_value = smg_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_ump45' then
+			Weapon_value = 'UMP45'
+			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
+			lua_re_mindmg_value = smg_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_xm1014' then
+			Weapon_value = 'XM1014'
+			lua_re_defdmg_value = ui.get_slider_int("rage_shotguns_min_damage"):get_value()
+			lua_re_mindmg_value = shotguns_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_bizon' then
+			Weapon_value = 'Bizon'
+			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
+			lua_re_mindmg_value = smg_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_mag7' then
+			Weapon_value = 'MAG7'
+			lua_re_defdmg_value = ui.get_slider_int("rage_shotguns_min_damage"):get_value()
+			lua_re_mindmg_value = shotguns_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_negev' then
+			Weapon_value = 'Negev'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_sawedoff' then
+			Weapon_value = 'Sawedoff'
+			lua_re_defdmg_value = ui.get_slider_int("rage_shotguns_min_damage"):get_value()
+			lua_re_mindmg_value = shotguns_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_tec9' then
+			Weapon_value = 'Tec9'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_taser' then
+			Weapon_value = 'Taser'
+			lua_re_defdmg_value = ui.get_slider_int("rage_taser_min_damage"):get_value()
+			lua_re_mindmg_value = taser_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_hkp2000' then
+			Weapon_value = 'P2000'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_mp7' then
+			Weapon_value = 'MP7'
+			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
+			lua_re_mindmg_value = smg_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_mp9' then
+			Weapon_value = 'MP9'
+			lua_re_defdmg_value = ui.get_slider_int("rage_smg_min_damage"):get_value()
+			lua_re_mindmg_value = smg_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_nova' then
+			Weapon_value = 'Nova'
+			lua_re_defdmg_value = ui.get_slider_int("rage_shotguns_min_damage"):get_value()
+			lua_re_mindmg_value = shotguns_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_p250' then
+			Weapon_value = 'P250'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_scar20' then
+			Weapon_value = 'SCAR20'
+			lua_re_defdmg_value = ui.get_slider_int("rage_auto_min_damage"):get_value()
+			lua_re_mindmg_value = auto_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_sg556' then
+			Weapon_value = 'SG553'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_ssg08' then
+			Weapon_value = 'SSG08'
+			lua_re_defdmg_value = ui.get_slider_int("rage_scout_min_damage"):get_value()
+			lua_re_mindmg_value = scout_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_flashbang' then
+			Weapon_value = 'Flashbang'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_hegrenade' then
+			Weapon_value = 'HEGrenade'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_smokegrenade' then
+			Weapon_value = 'SmokeGrenade'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_molotov' then
+			Weapon_value = 'Molotov'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_decoy' then
+			Weapon_value = 'Decoy'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_incgrenade' then
+			Weapon_value = 'INCGrenade'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_c4' then
+			Weapon_value = 'C4'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_healthshot' then
+			Weapon_value = 'Healthshot'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		elseif get_current_weapon() == 'weapon_m4a1_silencer' then
+			Weapon_value = 'M4A1_S'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = rifle_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_usp_silencer' then
+			Weapon_value = 'USP_S'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_cz75a' then
+			Weapon_value = 'CZ75'
+			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_revolver' then
+			Weapon_value = 'Revolver'
+			lua_re_defdmg_value = ui.get_slider_int("rage_revolver_min_damage"):get_value()
+			lua_re_mindmg_value = revolver_mindmg:get_value()
+		elseif get_current_weapon() == 'weapon_knife' or get_current_weapon() == 'weapon_knife_t' or get_current_weapon() == 'weapon_knifegg'then
+			Weapon_value = 'Knife'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		else
+			Weapon_value = 'Other'
+			lua_re_defdmg_value = 0
+			lua_re_mindmg_value = 0
+		end
+	end
 
 	local function add_indicator(indicator)
 		table.insert(indicators, indicator)
@@ -1258,8 +1609,6 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 		local y = 30 * #indicators
 
-		local lua_re_dmgoverride_value = lua_re_dmgoverride:get_value()
-
 		for key, value in pairs(indicators) do
 			local addition = 6
 
@@ -1268,6 +1617,17 @@ client.register_callback('create_move', deaglehit_hitscan)
 			render_text(value.text, x, h - y, value.color)
 
 			addition = addition + sizes.y
+
+			if value.Weapon then
+				local Weapon = value.Weapon
+				render_text(Weapon.value, x + 150, h - y, Weapon.color)
+			end
+			
+			if value.CHOKE then
+				local CHOKE = value.CHOKE
+				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 6), 30, color_t.new(0, 0, 0, 255))
+				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 5), 30, CHOKE.color)
+			end
 
 			if value.bar then
 				local bar = value.bar
@@ -1279,13 +1639,21 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 			if value.DMG then
 				local DMG = value.DMG
-				render_text(lua_re_dmgoverride_value, x + 130, h - y, DMG.color)
+
+				if lua_re_mindmg_bind:is_active() and not lua_re_dmgoverride_bind:is_active() then
+					render_text(DMG.Value2, x + 118, h - y, DMG.color1)
+					render_text('(MinDmg)', x + 156, h - y, DMG.color2)
+				elseif lua_re_dmgoverride_bind:is_active() then
+					render_text(DMG.Value3, x + 118, h - y, DMG.color1)
+					render_text('(Override)', x + 156, h - y, DMG.color3)
+				else
+					render_text(DMG.Value1, x + 118, h - y, DMG.color1)
+					render_text('(Default)', x + 156, h - y, DMG.color1)
+				end
 			end
 
 			y = y - addition
 		end
-
-		
 	end
 
 	local function to_percent(a, b)
@@ -1297,6 +1665,100 @@ client.register_callback('create_move', deaglehit_hitscan)
 		local green = per > 50 and 255 or math.floor((per * 2) * 255 / 100);
 
 		return color_t.new(red, green, 13, alpha or 255);
+	end
+
+	local chocked_fl = clientstate.get_choked_commands()
+	local First_CK = chocked_fl
+	local choked_1,choked_2,choked_3,choked_4,choked_5 = 0,0,0,0,0
+	local choked_1_backup = {0, 0, 0, 0, 0}
+	local choked_2_backup = {0, 0, 0, 0, 0}
+	local choked_3_backup = {0, 0, 0, 0, 0}
+	local choked_4_backup = {0, 0, 0, 0, 0}
+	local choked_5_backup = {0, 0, 0, 0, 0}
+
+	local time_start = math.floor(globalvars.get_tick_count())
+
+	local function fakelag_chock()
+		for i = 1, 64 do
+			chocked_fl = clientstate.get_choked_commands()
+
+			local time_current = math.floor(globalvars.get_tick_count())
+			local time = time_current - time_start
+
+			if time > 320 then
+				time_start = time_current - 1
+			end
+
+			if chocked_fl <= First_CK then
+				if time == 320 then
+					choked_5_backup[1] = choked_4_backup[1]
+					choked_4_backup[2] = choked_3_backup[2]
+					choked_3_backup[3] = choked_2_backup[3]
+					choked_2_backup[4] = choked_1_backup[4]
+					choked_1_backup[5] = First_CK
+
+					choked_1 = choked_1_backup[5]
+					choked_2 = choked_2_backup[4]
+					choked_3 = choked_3_backup[3]
+					choked_4 = choked_4_backup[2]
+					choked_5 = choked_5_backup[1]
+				end
+				if time == 256 then
+					choked_5_backup[5] = choked_4_backup[5]
+					choked_4_backup[1] = choked_3_backup[1]
+					choked_3_backup[2] = choked_2_backup[2]
+					choked_2_backup[3] = choked_1_backup[3]
+					choked_1_backup[4] = First_CK
+
+					choked_1 = choked_1_backup[4]
+					choked_2 = choked_2_backup[3]
+					choked_3 = choked_3_backup[2]
+					choked_4 = choked_4_backup[1]
+					choked_5 = choked_5_backup[5]
+				end
+				if time == 192 then
+					choked_5_backup[4] = choked_4_backup[4]
+					choked_4_backup[5] = choked_3_backup[5]
+					choked_3_backup[1] = choked_2_backup[1]
+					choked_2_backup[2] = choked_1_backup[2]
+					choked_1_backup[3] = First_CK
+
+					choked_1 = choked_1_backup[3]
+					choked_2 = choked_2_backup[2]
+					choked_3 = choked_3_backup[1]
+					choked_4 = choked_4_backup[5]
+					choked_5 = choked_5_backup[4]
+				end
+				if time == 128 then
+					choked_5_backup[3] = choked_4_backup[3]
+					choked_4_backup[4] = choked_3_backup[4]
+					choked_3_backup[5] = choked_2_backup[5]
+					choked_2_backup[1] = choked_1_backup[1]
+					choked_1_backup[2] = First_CK
+
+					choked_1 = choked_1_backup[2]
+					choked_2 = choked_2_backup[1]
+					choked_3 = choked_3_backup[5]
+					choked_4 = choked_4_backup[4]
+					choked_5 = choked_5_backup[3]
+				end
+				if time == 64 then
+					choked_5_backup[2] = choked_4_backup[2]
+					choked_4_backup[3] = choked_3_backup[3]
+					choked_3_backup[4] = choked_2_backup[4]
+					choked_2_backup[5] = choked_1_backup[5]
+					choked_1_backup[1] = First_CK
+
+					choked_1 = choked_1_backup[1]
+					choked_2 = choked_2_backup[5]
+					choked_3 = choked_3_backup[4]
+					choked_4 = choked_4_backup[3]
+					choked_5 = choked_5_backup[2]
+				end
+			end
+
+			First_CK = chocked_fl
+		end
 	end
 
 	local antihit_fakelag_limit = ui.get_slider_int('antihit_fakelag_limit')
@@ -1338,14 +1800,53 @@ client.register_callback('create_move', deaglehit_hitscan)
 								max = limit,
 								min = 0,
 								value = chocked
+							},
+							CHOKE = {
+								color = color_t.new(30, 144, 255, 255),
+								choked1 = choked_1,
+								choked2 = choked_2,
+								choked3 = choked_3,
+								choked4 = choked_4,
+								choked5 = choked_5
 							}
 						}
 					end
+					
+					if name == 'Weapon ->' then
+						information = {
+							text = name,
+							color = color_t.new(30, 144, 255, 255),
+							Weapon = {
+								color = color_t.new(30, 144, 255, 255),
+								value = Weapon_value
+							}
+						}
+					end
+
+					if name == 'DMG  ->' then
+						local lua_re_dmgoverride_value = lua_re_dmgoverride:get_value()
+
+						information = {
+							text = name,
+							color = color_t.new(30, 144, 255, 255),
+							DMG = {
+								color1 = color_t.new(30, 144, 255, 255),
+								color2 = color_t.new(0, 255, 0, 255),
+								color3 = color_t.new(230, 0, 0, 255),
+								Value1 = lua_re_defdmg_value,
+								Value2 = lua_re_mindmg_value,
+								Value3 = lua_re_dmgoverride_value
+							}
+						}
+					end
+
+					
+
 				elseif bind.type == 'slider_int' then
 					if bind.cfg:get_value() > bind.disable_val then
 						information = {
 							text = name,
-							color = color_t.new(0, 255, 0, 255)
+							color = color_t.new(255, 170, 0, 255)
 						}
 					end
 				elseif bind.type == 'key_bind' then
@@ -1354,12 +1855,6 @@ client.register_callback('create_move', deaglehit_hitscan)
 							text = name,
 							color = color_t.new(0, 255, 0, 255)
 						}
-
-						if name == 'DMG  -->' then
-							information.DMG = {
-								color = color_t.new(0, 255, 0, 255)
-							}
-						end
 
 						if name == 'DT' then
 							local active_weapon = player:get_prop_int(m_hActiveWeapon)
@@ -1604,11 +2099,77 @@ client.register_callback('create_move', deaglehit_hitscan)
 		}
 	end
 
+	--Watermark
+	local Watermark_enabled = ui.add_check_box("Enable Watermark", "Watermark_enabled", true)
+
+	local pos, pos2 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
+	local pos3, pos4 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
+	
+	local function get_fps()
+		frametime = globalvars.get_frame_time()
+		local fps = math.floor(1000 / (frametime * 1000))
+		if fps < 10 then fps = "   " .. tostring(fps)
+		elseif fps < 100 then fps = "  " .. tostring(fps) end
+		return fps
+	end
+
+	local function get_time()
+		local hours, minutes, seconds = client.get_system_time()
+		if hours < 10 then hours = "0" .. tostring(hours) end
+		if minutes < 10 then minutes = "0" .. tostring(minutes) end
+		if seconds < 10 then seconds = "0" .. tostring(seconds) end
+		return hours .. ":" .. minutes .. ":" .. seconds
+	end
+
+	local function get_ping()
+		local ping = math.floor(se.get_latency())
+		if ping < 10 then ping = " " .. tostring(ping) end
+		return ping
+	end
+
+	--[[
+	local function get_username()
+		local username = client.get_username()
+		return username
+	end
+	это хуета робит но я ее убрал из-за неизвестных размерах вашего никнайма
+	 ]]--
+
+	local function get_tickr()
+		local tickr = 1.0 / globalvars.get_interval_per_tick()
+		return tickr
+	end
+	
+	local function draw_watermark()
+		if Watermark_enabled:get_value() == true then
+			renderer.filled_polygon({ vec2_t.new(screen.x - 360, 6), vec2_t.new(screen.x - 325, 30), vec2_t.new(screen.x - 325, 6) }, color_t.new(30,30,30,255)) --0 25 25
+			local inner_pos1, inner_pos2 = vec2_t.new(screen.x - 300, 15), vec2_t.new(screen.x - 100, 65)
+			renderer.rect_filled(pos, pos2, color_t.new(30,30,30,255))
+			
+			--renderer.rect(pos, pos2, color_t.new(15,15,15,255)) --отрисовка говна рамки
+			--renderer.rect_filled(inner_pos1, inner_pos2, color_t.new(20,20,20,255))
+			--renderer.rect(inner_pos1, inner_pos2, color_t.new(15,15,15,255))
+		
+			local fpos1, fpos2 = vec2_t.new(screen.x - 360, 3), vec2_t.new(screen.x - 5, 6) -- отрисовка разно цеветной линии
+			renderer.rect_filled_fade(fpos1, fpos2, color_t.new(243, 0, 255, 255), color_t.new(255, 243, 77, 255), color_t.new(255, 243, 77, 255), color_t.new(243, 0, 255, 255))
+			
+			--local npos, nposs = vec2_t.new(screen.x - 160, 17), vec2_t.new(screen.x - 159, 18) --отрисовка тега чита
+			--renderer.text("NIXWARE", fonts.verdana_watermark, nposs, 13, color_t.new(0, 0, 0, 255))
+			--renderer.text("NIXWARE", fonts.verdana_watermark, npos, 13, color_t.new(255, 255, 255, 255))
+		
+			local fpos = vec2_t.new(screen.x - 325, 10) --корды отрисовки текста
+			renderer.text("nixware.cc | " .. get_tickr() .. " tick | " .. get_time() ..  " | PING: " .. get_ping() .. " | FPS:" .. get_fps(), fonts.verdana_watermark, fpos, 13, color_t.new(255, 255, 255, 255))
+		end
+	end
+
+	client.register_callback("create_move", get_current_weapon)
+	client.register_callback("create_move", show_current_weapon)
+	client.register_callback("create_move", fakelag_chock)
 	client.register_callback("paint", on_paint_indicators)
 	client.register_callback("paint", on_paint_hitlist)
 	client.register_callback("shot_fired", hitlist)
+	client.register_callback("paint", draw_watermark)
 
-	
 
 -- Menu
 
@@ -1640,6 +2201,10 @@ local function menu_switch()
 		lua_re_bt:set_visible(true)
 		lua_re_bt_onxploit:set_visible(true)
 
+		-- MinDmg
+		lua_re_mindmg_enable:set_visible(false)
+		lua_re_mindmg_weaponconfig:set_visible(false)
+
 		-- DT/HS/FL/FD
 		lua_re_weaponconfig:set_visible(false)
 		
@@ -1657,7 +2222,8 @@ local function menu_switch()
 		hitlog_clear:set_visible(false)
 		hitlog_pos_x:set_visible(false)
 		hitlog_pos_y:set_visible(false)
-
+		Watermark_enabled:set_visible(false)
+	
 	elseif lua_re_menu:get_value() == 1 then
 
 		-- Rage
@@ -1685,6 +2251,60 @@ local function menu_switch()
 		lua_re_bt:set_visible(false)
 		lua_re_bt_onxploit:set_visible(false)
 
+		-- MinDmg
+		lua_re_mindmg_enable:set_visible(true)
+		lua_re_mindmg_weaponconfig:set_visible(true)
+
+		-- DT/HS/FL/FD
+		lua_re_weaponconfig:set_visible(false)
+
+		-- Indicators
+		scale_thirdperson:set_visible(false)
+		thirdperson_scale:set_visible(false)
+
+		indicators_switch:set_visible(false)
+		x_slider:set_visible(false)
+		y_slider:set_visible(false)
+
+		hitlist_switch:set_visible(false)
+		color_hitlist:set_visible(false)
+		style:set_visible(false)
+		hitlog_clear:set_visible(false)
+		hitlog_pos_x:set_visible(false)
+		hitlog_pos_y:set_visible(false)
+		Watermark_enabled:set_visible(false)
+
+	elseif lua_re_menu:get_value() == 2 then
+
+		-- Rage
+		lua_re_ragelogs:set_visible(false)
+		lua_re_votelogs:set_visible(false)
+		lua_re_buylogs:set_visible(false)
+			
+		lua_re_autopeek:set_visible(false)
+		lua_re_autopeek_circle:set_visible(false)
+			
+		lua_re_onlyhead_bind:set_visible(false)
+		lua_re_baim_bind:set_visible(false)
+		lua_re_laim_bind:set_visible(false)
+		lua_re_safepoints_bind:set_visible(false)
+		lua_re_lethal_bind:set_visible(false)
+		lua_re_pingspike_bind:set_visible(false)
+		lua_re_mindmg_bind:set_visible(false)
+		lua_re_resolver_override_bind:set_visible(false)
+			
+		lua_re_dmgoverride_bind:set_visible(false)
+		lua_re_dmgoverride:set_visible(false)
+			
+		lua_re_switchexploit:set_visible(false)
+			
+		lua_re_bt:set_visible(false)
+		lua_re_bt_onxploit:set_visible(false)
+
+		-- MinDmg
+		lua_re_mindmg_enable:set_visible(false)
+		lua_re_mindmg_weaponconfig:set_visible(false)
+
 		-- DT/HS/FL/FD
 		lua_re_weaponconfig:set_visible(true)
 
@@ -1702,8 +2322,9 @@ local function menu_switch()
 		hitlog_clear:set_visible(false)
 		hitlog_pos_x:set_visible(false)
 		hitlog_pos_y:set_visible(false)
+		Watermark_enabled:set_visible(false)
 
-	elseif lua_re_menu:get_value() == 2 then
+	elseif lua_re_menu:get_value() == 3 then
 
 		-- Rage
 		lua_re_ragelogs:set_visible(false)
@@ -1730,6 +2351,10 @@ local function menu_switch()
 		lua_re_bt:set_visible(false)
 		lua_re_bt_onxploit:set_visible(false)
 
+		-- MinDmg
+		lua_re_mindmg_enable:set_visible(false)
+		lua_re_mindmg_weaponconfig:set_visible(false)
+
 		-- DT/HS/FL/FD
 		lua_re_weaponconfig:set_visible(false)
 
@@ -1747,7 +2372,7 @@ local function menu_switch()
 		hitlog_clear:set_visible(true)
 		hitlog_pos_x:set_visible(true)
 		hitlog_pos_y:set_visible(true)
-
+		Watermark_enabled:set_visible(true)
 	end
 end
 
