@@ -1759,92 +1759,93 @@ client.register_callback('create_move', deaglehit_hitscan)
 	local time_start = math.floor(globalvars.get_tick_count())
 
 	local function fakelag_chock()
-		local player = entitylist.get_local_player()
+		local function get_fakelag_bysec()
+			for i = 1, 64 do
+				chocked_fl = clientstate.get_choked_commands()
 
-		for i = 1, 64 do
-			chocked_fl = clientstate.get_choked_commands()
+				local time_current = math.floor(globalvars.get_tick_count())
+				local time = time_current - time_start
 
-			local time_current = math.floor(globalvars.get_tick_count())
-			local time = time_current - time_start
+				if time > 320 then
+					time_start = time_current - 1
+				end
 
-			if time > 320 then
-				time_start = time_current - 1
+				if chocked_fl <= First_CK then
+					if time == 320 then
+						choked_5_backup[1] = choked_4_backup[1]
+						choked_4_backup[2] = choked_3_backup[2]
+						choked_3_backup[3] = choked_2_backup[3]
+						choked_2_backup[4] = choked_1_backup[4]
+						choked_1_backup[5] = First_CK
+
+						choked_1 = choked_1_backup[5]
+						choked_2 = choked_2_backup[4]
+						choked_3 = choked_3_backup[3]
+						choked_4 = choked_4_backup[2]
+						choked_5 = choked_5_backup[1]
+					end
+					if time == 256 then
+						choked_5_backup[5] = choked_4_backup[5]
+						choked_4_backup[1] = choked_3_backup[1]
+						choked_3_backup[2] = choked_2_backup[2]
+						choked_2_backup[3] = choked_1_backup[3]
+						choked_1_backup[4] = First_CK
+
+						choked_1 = choked_1_backup[4]
+						choked_2 = choked_2_backup[3]
+						choked_3 = choked_3_backup[2]
+						choked_4 = choked_4_backup[1]
+						choked_5 = choked_5_backup[5]
+					end
+					if time == 192 then
+						choked_5_backup[4] = choked_4_backup[4]
+						choked_4_backup[5] = choked_3_backup[5]
+						choked_3_backup[1] = choked_2_backup[1]
+						choked_2_backup[2] = choked_1_backup[2]
+						choked_1_backup[3] = First_CK
+
+						choked_1 = choked_1_backup[3]
+						choked_2 = choked_2_backup[2]
+						choked_3 = choked_3_backup[1]
+						choked_4 = choked_4_backup[5]
+						choked_5 = choked_5_backup[4]
+					end
+					if time == 128 then
+						choked_5_backup[3] = choked_4_backup[3]
+						choked_4_backup[4] = choked_3_backup[4]
+						choked_3_backup[5] = choked_2_backup[5]
+						choked_2_backup[1] = choked_1_backup[1]
+						choked_1_backup[2] = First_CK
+
+						choked_1 = choked_1_backup[2]
+						choked_2 = choked_2_backup[1]
+						choked_3 = choked_3_backup[5]
+						choked_4 = choked_4_backup[4]
+						choked_5 = choked_5_backup[3]
+					end
+					if time == 64 then
+						choked_5_backup[2] = choked_4_backup[2]
+						choked_4_backup[3] = choked_3_backup[3]
+						choked_3_backup[4] = choked_2_backup[4]
+						choked_2_backup[5] = choked_1_backup[5]
+						choked_1_backup[1] = First_CK
+
+						choked_1 = choked_1_backup[1]
+						choked_2 = choked_2_backup[5]
+						choked_3 = choked_3_backup[4]
+						choked_4 = choked_4_backup[3]
+						choked_5 = choked_5_backup[2]
+					end
+				end
+				
+				First_CK = chocked_fl
 			end
-
-			if chocked_fl <= First_CK then
-				if time == 320 then
-					choked_5_backup[1] = choked_4_backup[1]
-					choked_4_backup[2] = choked_3_backup[2]
-					choked_3_backup[3] = choked_2_backup[3]
-					choked_2_backup[4] = choked_1_backup[4]
-					choked_1_backup[5] = First_CK
-
-					choked_1 = choked_1_backup[5]
-					choked_2 = choked_2_backup[4]
-					choked_3 = choked_3_backup[3]
-					choked_4 = choked_4_backup[2]
-					choked_5 = choked_5_backup[1]
-				end
-				if time == 256 then
-					choked_5_backup[5] = choked_4_backup[5]
-					choked_4_backup[1] = choked_3_backup[1]
-					choked_3_backup[2] = choked_2_backup[2]
-					choked_2_backup[3] = choked_1_backup[3]
-					choked_1_backup[4] = First_CK
-
-					choked_1 = choked_1_backup[4]
-					choked_2 = choked_2_backup[3]
-					choked_3 = choked_3_backup[2]
-					choked_4 = choked_4_backup[1]
-					choked_5 = choked_5_backup[5]
-				end
-				if time == 192 then
-					choked_5_backup[4] = choked_4_backup[4]
-					choked_4_backup[5] = choked_3_backup[5]
-					choked_3_backup[1] = choked_2_backup[1]
-					choked_2_backup[2] = choked_1_backup[2]
-					choked_1_backup[3] = First_CK
-
-					choked_1 = choked_1_backup[3]
-					choked_2 = choked_2_backup[2]
-					choked_3 = choked_3_backup[1]
-					choked_4 = choked_4_backup[5]
-					choked_5 = choked_5_backup[4]
-				end
-				if time == 128 then
-					choked_5_backup[3] = choked_4_backup[3]
-					choked_4_backup[4] = choked_3_backup[4]
-					choked_3_backup[5] = choked_2_backup[5]
-					choked_2_backup[1] = choked_1_backup[1]
-					choked_1_backup[2] = First_CK
-
-					choked_1 = choked_1_backup[2]
-					choked_2 = choked_2_backup[1]
-					choked_3 = choked_3_backup[5]
-					choked_4 = choked_4_backup[4]
-					choked_5 = choked_5_backup[3]
-				end
-				if time == 64 then
-					choked_5_backup[2] = choked_4_backup[2]
-					choked_4_backup[3] = choked_3_backup[3]
-					choked_3_backup[4] = choked_2_backup[4]
-					choked_2_backup[5] = choked_1_backup[5]
-					choked_1_backup[1] = First_CK
-
-					choked_1 = choked_1_backup[1]
-					choked_2 = choked_2_backup[5]
-					choked_3 = choked_3_backup[4]
-					choked_4 = choked_4_backup[3]
-					choked_5 = choked_5_backup[2]
-				end
-			end
-
-			First_CK = chocked_fl
-
-			--print(tostring(i))
-
 		end
 
+		local player = entitylist.get_local_player()
+		if engine.is_in_game() and player:is_alive() then
+			get_fakelag_bysec()
+		end
 	end
 
 	local antihit_fakelag_limit = ui.get_slider_int('antihit_fakelag_limit')
