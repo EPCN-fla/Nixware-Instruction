@@ -8,6 +8,7 @@
 		DT Helper.lua(https://nixware.cc/threads/15098/);
 		watermark.lua(https://nixware.cc/threads/14858/);
 		Indicators.lua(https://nixware.cc/threads/17596/);
+		Thirdperson.lua(https://nixware.cc/threads/15966/);
 		and many other scripts
 --]]
 
@@ -135,6 +136,7 @@ local lua_re_autopeek_circle = ui.add_color_edit("Autopeek Circle", "lua_re_auto
 local scale_thirdperson = ui.add_check_box("Thirdperson Distance", "scale_thirdperson", false)
 local thirdperson_scale = ui.add_slider_int("Thirdperson Scale", "thirdperson_scale", 65, 200, 120)
 
+local lua_re_thirdperson_bind = ui.add_key_bind("Thirdperson", "lua_re_thirdperson_bind", 0, 2)
 local lua_re_onlyhead_bind = ui.add_key_bind("Only Head", "lua_re_onlyhead_bind", 0, 2)
 local lua_re_baim_bind = ui.add_key_bind("Force BAIM", "lua_re_baim_bind", 0, 2)
 local lua_re_laim_bind = ui.add_key_bind("Wash Legs", "lua_re_laim_bind", 0, 2)
@@ -269,6 +271,43 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 		if not scale_thirdperson:get_value() and once_thirdperson then 
 			once_thirdperson = not once_thirdperson 
 			se.get_convar("cam_idealdist"):set_int(120) 
+		end
+	end
+
+	local old_counter = 20
+	local counter = 20
+
+	ui.get_key_bind("visuals_other_thirdperson_bind"):set_key(0x00)
+	ui.get_key_bind("visuals_other_thirdperson_bind"):set_type(0)
+	ui.get_check_box("visuals_other_thirdperson"):set_value(false)
+	ui.get_check_box("visuals_other_force_thirdperson"):set_value(false)
+
+	local function thirdperson_smooth()
+		if lua_re_thirdperson_bind:is_active() then
+	
+			if counter ~= 150 then
+				 counter = counter + 2
+			end
+	
+		else
+	
+			if counter ~= 20 then
+				counter = counter - 2
+		   end
+	
+		end
+		
+		if old_counter ~= counter then
+			engine.execute_client_cmd("cam_idealdist " .. counter .. "")
+			old_counter = counter
+		end
+	
+		if counter >= 40 then
+			ui.get_check_box("visuals_other_thirdperson"):set_value(true)
+			ui.get_check_box("visuals_other_force_thirdperson"):set_value(true)
+		else
+			ui.get_check_box("visuals_other_thirdperson"):set_value(false)
+			ui.get_check_box("visuals_other_force_thirdperson"):set_value(false)
 		end
 	end
 
@@ -445,11 +484,13 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 	local function on_unload()
 		sv_maxunlag:set_float(sv_maxunlag_original)
 		ui.get_check_box("misc_autostrafer"):set_value(true)
+		engine.execute_client_cmd("cam_idealdist 150")
 	end
 	
 	client.register_callback("unload", on_unload)
 	client.register_callback("paint", on_paint_autopeek)
 	client.register_callback("fire_game_event", on_events)
+	client.register_callback("frame_stage_notify",thirdperson_smooth)
 	client.register_callback("shot_fired", on_shot_fired)
 	client.register_callback("create_move", on_create_move)
 
@@ -2102,7 +2143,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 	--Keybinds & Watermark
 	--Nixware watermark
-	local Watermark_enabled = ui.add_check_box("Enable Watermark", "Watermark_enabled", true)
+	local lua_re_watermark_enabled = ui.add_check_box("Enable Watermark", "lua_re_watermark_enabled", true)
 
 	local pos, pos2 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
 	local pos3, pos4 = vec2_t.new(screen.x - 325, 5), vec2_t.new(screen.x - 5, 30)
@@ -2169,8 +2210,8 @@ client.register_callback('create_move', deaglehit_hitscan)
 	local style_line = ui.add_combo_box("Style line", "style_line", { "Static", "Fade", "Reverse fade", "Gradient", "Skeet", "Chroma" }, 0)
 	local chroma_dir = ui.add_combo_box("Chroma direction", "chroma_dir", { "Left", "Right", "Static" }, 0)
 	local color_line = ui.add_color_edit("Color line", "color_line", true, color_t.new(0, 255, 255, 255))
-	local keybinds_x = ui.add_slider_int("keybind_x", "keybinds_x", 0, engine.get_screen_size().x, 345)
-	local keybinds_y = ui.add_slider_int("keybind_y", "keybinds_y", 0, engine.get_screen_size().y, 215)
+	local lua_re_keybinds_x = ui.add_slider_int("keybind_x", "lua_re_keybinds_x", 0, engine.get_screen_size().x, 345)
+	local lua_re_keybinds_y = ui.add_slider_int("keybind_y", "lua_re_keybinds_y", 0, engine.get_screen_size().y, 215)
 
 	local types = { "always", "hold", "toggle", "disabled" }
 
@@ -2251,7 +2292,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 	["Fake duck"] = {reference = ui.get_key_bind("antihit_extra_fakeduck_bind"), exploit = 0, add = 0, multiply = 0},
 	["Jump bug"] = {reference = ui.get_key_bind("misc_jump_bug_bind"), exploit = 0, add = 0, multiply = 0},
 	["Edge jump"] = {reference = ui.get_key_bind("misc_edge_jump_bind"), exploit = 0, add = 0, multiply = 0},
-	
+	["Thirdperson"] = {reference = lua_re_thirdperson_bind, exploit = 0, add = 0, multiply = 0},
 	}
 
 	local function draw_watermark()
@@ -2261,12 +2302,12 @@ client.register_callback('create_move', deaglehit_hitscan)
 			animation_type:set_visible(screen_ind:get_value(0))
 			auto_resize_width:set_visible(screen_ind:get_value(0))
 			style_line:set_visible(screen) chroma_dir:set_visible(style_line:get_value() == 5) color_line:set_visible(screen)
-			keybinds_x:set_visible(false) keybinds_y:set_visible(false)
+			lua_re_keybinds_x:set_visible(false) lua_re_keybinds_y:set_visible(false)
 		else
 			animation_type:set_visible(false)
 			auto_resize_width:set_visible(false)
 			style_line:set_visible(false) chroma_dir:set_visible(false) color_line:set_visible(false)
-			keybinds_x:set_visible(false) keybinds_y:set_visible(false)
+			lua_re_keybinds_x:set_visible(false) lua_re_keybinds_y:set_visible(false)
 		end
 
 		--watermark
@@ -2279,7 +2320,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		--keybinds
 		local function watermark_keybinds()
 			if screen_ind:get_value(0) and engine.is_connected() then
-				local pos = {x = keybinds_x:get_value(), y = keybinds_y:get_value()}
+				local pos = {x = lua_re_keybinds_x:get_value(), y = lua_re_keybinds_y:get_value()}
 				local alphak, keybinds = {}, {}
 				local width, maxwidth = 25, 0;
 				local height = 17;
@@ -2305,12 +2346,12 @@ client.register_callback('create_move', deaglehit_hitscan)
 					filledbox(pos.x, pos.y, w, height, (alpha[1] / 255))
 					renderer.text("keybinds", fonts.verdana, vec2_t.new(pos.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2) + 1, pos.y + 3), 12, color_t.new(0, 0, 0, 255 * (alpha[1] / 255)))
 					renderer.text("keybinds", fonts.verdana, vec2_t.new(pos.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2), pos.y + 2), 12, color_t.new(255, 255, 255, 255 * (alpha[1] / 255)))
-					drag(pos.x, pos.y, w, height + 2, keybinds_x, keybinds_y, item)
+					drag(pos.x, pos.y, w, height + 2, lua_re_keybinds_x, lua_re_keybinds_y, item)
 				end
 			end
 		end
 		
-		if Watermark_enabled:get_value() then
+		if lua_re_watermark_enabled:get_value() then
 			show_watermark()
 			watermark_keybinds()
 		end
@@ -2339,13 +2380,15 @@ local function menu_switch()
 			
 		lua_re_autopeek:set_visible(true)
 		lua_re_autopeek_circle:set_visible(true)
-			
+
+		lua_re_thirdperson_bind:set_visible(true)
 		lua_re_onlyhead_bind:set_visible(true)
 		lua_re_baim_bind:set_visible(true)
 		lua_re_laim_bind:set_visible(true)
 		lua_re_safepoints_bind:set_visible(true)
 		lua_re_lethal_bind:set_visible(true)
 		lua_re_pingspike_bind:set_visible(true)
+		lua_re_pingspike:set_visible(true)
 		lua_re_mindmg_bind:set_visible(true)
 		lua_re_resolver_override_bind:set_visible(true)
 			
@@ -2378,7 +2421,7 @@ local function menu_switch()
 		hitlog_clear:set_visible(false)
 		hitlog_pos_x:set_visible(false)
 		hitlog_pos_y:set_visible(false)
-		Watermark_enabled:set_visible(false)
+		lua_re_watermark_enabled:set_visible(false)
 		screen_ind:set_visible(false)
 	
 	elseif lua_re_menu:get_value() == 1 then
@@ -2391,12 +2434,14 @@ local function menu_switch()
 		lua_re_autopeek:set_visible(false)
 		lua_re_autopeek_circle:set_visible(false)
 			
+		lua_re_thirdperson_bind:set_visible(false)
 		lua_re_onlyhead_bind:set_visible(false)
 		lua_re_baim_bind:set_visible(false)
 		lua_re_laim_bind:set_visible(false)
 		lua_re_safepoints_bind:set_visible(false)
 		lua_re_lethal_bind:set_visible(false)
 		lua_re_pingspike_bind:set_visible(false)
+		lua_re_pingspike:set_visible(false)
 		lua_re_mindmg_bind:set_visible(false)
 		lua_re_resolver_override_bind:set_visible(false)
 			
@@ -2429,7 +2474,7 @@ local function menu_switch()
 		hitlog_clear:set_visible(false)
 		hitlog_pos_x:set_visible(false)
 		hitlog_pos_y:set_visible(false)
-		Watermark_enabled:set_visible(false)
+		lua_re_watermark_enabled:set_visible(false)
 		screen_ind:set_visible(false)
 
 	elseif lua_re_menu:get_value() == 2 then
@@ -2442,12 +2487,14 @@ local function menu_switch()
 		lua_re_autopeek:set_visible(false)
 		lua_re_autopeek_circle:set_visible(false)
 			
+		lua_re_thirdperson_bind:set_visible(false)
 		lua_re_onlyhead_bind:set_visible(false)
 		lua_re_baim_bind:set_visible(false)
 		lua_re_laim_bind:set_visible(false)
 		lua_re_safepoints_bind:set_visible(false)
 		lua_re_lethal_bind:set_visible(false)
 		lua_re_pingspike_bind:set_visible(false)
+		lua_re_pingspike:set_visible(false)
 		lua_re_mindmg_bind:set_visible(false)
 		lua_re_resolver_override_bind:set_visible(false)
 			
@@ -2480,7 +2527,7 @@ local function menu_switch()
 		hitlog_clear:set_visible(false)
 		hitlog_pos_x:set_visible(false)
 		hitlog_pos_y:set_visible(false)
-		Watermark_enabled:set_visible(false)
+		lua_re_watermark_enabled:set_visible(false)
 		screen_ind:set_visible(false)
 
 	elseif lua_re_menu:get_value() == 3 then
@@ -2493,12 +2540,14 @@ local function menu_switch()
 		lua_re_autopeek:set_visible(false)
 		lua_re_autopeek_circle:set_visible(false)
 		
+		lua_re_thirdperson_bind:set_visible(false)
 		lua_re_onlyhead_bind:set_visible(false)
 		lua_re_baim_bind:set_visible(false)
 		lua_re_laim_bind:set_visible(false)
 		lua_re_safepoints_bind:set_visible(false)
 		lua_re_lethal_bind:set_visible(false)
 		lua_re_pingspike_bind:set_visible(false)
+		lua_re_pingspike:set_visible(false)
 		lua_re_mindmg_bind:set_visible(false)
 		lua_re_resolver_override_bind:set_visible(false)
 			
@@ -2531,7 +2580,7 @@ local function menu_switch()
 		hitlog_clear:set_visible(true)
 		hitlog_pos_x:set_visible(true)
 		hitlog_pos_y:set_visible(true)
-		Watermark_enabled:set_visible(true)
+		lua_re_watermark_enabled:set_visible(true)
 		screen_ind:set_visible(true)
 	end
 end
