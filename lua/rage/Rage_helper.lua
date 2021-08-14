@@ -1759,93 +1759,89 @@ client.register_callback('create_move', deaglehit_hitscan)
 	local time_start = math.floor(globalvars.get_tick_count())
 
 	local function fakelag_chock()
-		local function get_fakelag_bysec()
-			for i = 1, 64 do
-				chocked_fl = clientstate.get_choked_commands()
+		for i = 1, 64 do
+			chocked_fl = clientstate.get_choked_commands()
 
-				local time_current = math.floor(globalvars.get_tick_count())
-				local time = time_current - time_start
+			local time_current = math.floor(globalvars.get_tick_count())
+			local time = time_current - time_start
 
-				if time > 320 then
-					time_start = time_current - 1
-				end
-
-				if chocked_fl <= First_CK then
-					if time == 320 then
-						choked_5_backup[1] = choked_4_backup[1]
-						choked_4_backup[2] = choked_3_backup[2]
-						choked_3_backup[3] = choked_2_backup[3]
-						choked_2_backup[4] = choked_1_backup[4]
-						choked_1_backup[5] = First_CK
-
-						choked_1 = choked_1_backup[5]
-						choked_2 = choked_2_backup[4]
-						choked_3 = choked_3_backup[3]
-						choked_4 = choked_4_backup[2]
-						choked_5 = choked_5_backup[1]
-					end
-					if time == 256 then
-						choked_5_backup[5] = choked_4_backup[5]
-						choked_4_backup[1] = choked_3_backup[1]
-						choked_3_backup[2] = choked_2_backup[2]
-						choked_2_backup[3] = choked_1_backup[3]
-						choked_1_backup[4] = First_CK
-
-						choked_1 = choked_1_backup[4]
-						choked_2 = choked_2_backup[3]
-						choked_3 = choked_3_backup[2]
-						choked_4 = choked_4_backup[1]
-						choked_5 = choked_5_backup[5]
-					end
-					if time == 192 then
-						choked_5_backup[4] = choked_4_backup[4]
-						choked_4_backup[5] = choked_3_backup[5]
-						choked_3_backup[1] = choked_2_backup[1]
-						choked_2_backup[2] = choked_1_backup[2]
-						choked_1_backup[3] = First_CK
-
-						choked_1 = choked_1_backup[3]
-						choked_2 = choked_2_backup[2]
-						choked_3 = choked_3_backup[1]
-						choked_4 = choked_4_backup[5]
-						choked_5 = choked_5_backup[4]
-					end
-					if time == 128 then
-						choked_5_backup[3] = choked_4_backup[3]
-						choked_4_backup[4] = choked_3_backup[4]
-						choked_3_backup[5] = choked_2_backup[5]
-						choked_2_backup[1] = choked_1_backup[1]
-						choked_1_backup[2] = First_CK
-
-						choked_1 = choked_1_backup[2]
-						choked_2 = choked_2_backup[1]
-						choked_3 = choked_3_backup[5]
-						choked_4 = choked_4_backup[4]
-						choked_5 = choked_5_backup[3]
-					end
-					if time == 64 then
-						choked_5_backup[2] = choked_4_backup[2]
-						choked_4_backup[3] = choked_3_backup[3]
-						choked_3_backup[4] = choked_2_backup[4]
-						choked_2_backup[5] = choked_1_backup[5]
-						choked_1_backup[1] = First_CK
-
-						choked_1 = choked_1_backup[1]
-						choked_2 = choked_2_backup[5]
-						choked_3 = choked_3_backup[4]
-						choked_4 = choked_4_backup[3]
-						choked_5 = choked_5_backup[2]
-					end
-				end
-				
-				First_CK = chocked_fl
+			if time > 320 / 8 then
+				time_start = time_current - 1
 			end
-		end
 
-		local player = entitylist.get_local_player()
-		if engine.is_in_game() and player:is_alive() then
-			get_fakelag_bysec()
+			if chocked_fl <= First_CK then
+				if time == 320 / 8 then
+					choked_5_backup[1] = choked_4_backup[1]
+					choked_4_backup[2] = choked_3_backup[2]
+					choked_3_backup[3] = choked_2_backup[3]
+					choked_2_backup[4] = choked_1_backup[4]
+					choked_1_backup[5] = First_CK
+					choked_1 = choked_1_backup[5]
+					choked_2 = choked_2_backup[4]
+					choked_3 = choked_3_backup[3]
+					choked_4 = choked_4_backup[2]
+					choked_5 = choked_5_backup[1]
+				end
+				if time == 256 / 8 then
+					choked_5_backup[5] = choked_4_backup[5]
+					choked_4_backup[1] = choked_3_backup[1]
+					choked_3_backup[2] = choked_2_backup[2]
+					choked_2_backup[3] = choked_1_backup[3]
+					choked_1_backup[4] = First_CK
+					
+					choked_1 = choked_1_backup[4]
+					choked_2 = choked_2_backup[3]
+					choked_3 = choked_3_backup[2]
+					choked_4 = choked_4_backup[1]
+					choked_5 = choked_5_backup[5]
+				end
+				if time == 192 / 8 then
+					choked_5_backup[4] = choked_4_backup[4]
+					choked_4_backup[5] = choked_3_backup[5]
+					choked_3_backup[1] = choked_2_backup[1]
+					choked_2_backup[2] = choked_1_backup[2]
+					choked_1_backup[3] = First_CK
+
+					choked_1 = choked_1_backup[3]
+					choked_2 = choked_2_backup[2]
+					choked_3 = choked_3_backup[1]
+					choked_4 = choked_4_backup[5]
+					choked_5 = choked_5_backup[4]
+				end
+				if time == 128 / 8 then
+					choked_5_backup[3] = choked_4_backup[3]
+					choked_4_backup[4] = choked_3_backup[4]
+					choked_3_backup[5] = choked_2_backup[5]
+					choked_2_backup[1] = choked_1_backup[1]
+					choked_1_backup[2] = First_CK
+						
+					choked_1 = choked_1_backup[2]
+					choked_2 = choked_2_backup[1]
+					choked_3 = choked_3_backup[5]
+					choked_4 = choked_4_backup[4]
+					choked_5 = choked_5_backup[3]
+				end
+				if time == 64 / 8 then
+					choked_5_backup[2] = choked_4_backup[2]
+					choked_4_backup[3] = choked_3_backup[3]
+					choked_3_backup[4] = choked_2_backup[4]
+					choked_2_backup[5] = choked_1_backup[5]
+					choked_1_backup[1] = First_CK
+
+					choked_1 = choked_1_backup[1]
+					choked_2 = choked_2_backup[5]
+					choked_3 = choked_3_backup[4]
+					choked_4 = choked_4_backup[3]
+					choked_5 = choked_5_backup[2]
+				end
+			end
+			
+			First_CK = chocked_fl
 		end
+	end
+	
+	if engine.is_in_game() and entitylist.get_local_player() and entitylist.get_local_player():is_alive() then
+		fakelag_chock()
 	end
 
 	local antihit_fakelag_limit = ui.get_slider_int('antihit_fakelag_limit')
@@ -2322,6 +2318,65 @@ client.register_callback('create_move', deaglehit_hitscan)
 		end
 	end
 
+	--Spectators
+	local m_hObserverTarget = se.get_netvar("DT_BasePlayer", "m_hObserverTarget")
+	local m_iObserverMode = se.get_netvar("DT_BasePlayer", "m_iObserverMode")
+
+	local names = { 'Not work now' }
+	local modes = {}
+	--[[
+	local function get_observer_mode(mode)
+		if mode == 4 then return " ( Firstperson )"
+		elseif mode == 5 then return " ( Thirdperson )"
+		elseif mode == 1 then return " ( Deathcam )"
+		elseif mode == 2 or mode == 6 then return " ( Freecam )" end
+		return ""
+	end
+
+	local function table_unique(t, bArray)
+		local check = {}
+		local n = {}
+		local idx = 1
+		for k, v in pairs(t) do
+			if not check[v] then
+				if bArray then
+					n[idx] = v
+					idx = idx + 1
+				else
+					n[k] = v
+				end
+				check[v] = true
+			end
+		end
+		return n
+	end
+
+	local function spectators()
+		local players = entitylist.get_players(2)
+		local myself = engine.get_local_player()
+
+		for i = 1, #players do
+			local player = players[i]
+			local player_index = player:get_index()
+			local player_info = engine.get_player_info(player_index)
+
+			if player_index ~= myself then
+				if player:get_prop_int(m_iHealth) <= 0 then
+					local spec = entitylist.get_entity_from_handle(player:get_prop_int(m_hObserverTarget))
+					if spec:get_index() > 0 and spec:get_index() == myself and player:is_dormant() == false then
+						local mode = player:get_prop_int(m_iObserverMode)
+						local observer_mode = get_observer_mode(mode)
+
+						table.insert(names, player_info.name)
+						table.insert(modes, observer_mode)
+					end
+				end
+			end
+
+			table_unique(names, true)
+		end
+	end
+	]]--
 	local function watermark()
 		renderer.filled_polygon({ vec2_t.new(screen.x - 360, 6), vec2_t.new(screen.x - 325, 30), vec2_t.new(screen.x - 325, 6) }, color_t.new(30,30,30,255)) --0 25 25
 		local inner_pos1, inner_pos2 = vec2_t.new(screen.x - 300, 15), vec2_t.new(screen.x - 100, 65)
@@ -2362,7 +2417,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 	end
 
 	
-	local screen_ind = ui.add_multi_combo_box("Screen indicators", "screen_ind", { "Keybinds", "Watermark" }, { false, false })
+	local screen_ind = ui.add_multi_combo_box("Screen indicators", "screen_ind", { "Keybinds", "Watermark", "Spectators" }, { false, false, false })
 	local animation_type = ui.add_combo_box("Animation type", "animation_type", { "Skeet", "Neverlose" }, 0)
 	local auto_resize_width = ui.add_check_box("Auto resize width", "auto_resize_width", false)
 	local style_line = ui.add_combo_box("Style line", "style_line", { "Static", "Fade", "Reverse fade", "Gradient", "Skeet", "Chroma" }, 0)
@@ -2370,8 +2425,10 @@ client.register_callback('create_move', deaglehit_hitscan)
 	local color_line = ui.add_color_edit("Color line", "color_line", true, color_t.new(0, 255, 255, 255))
 	local lua_re_keybinds_x = ui.add_slider_int("keybind_x", "lua_re_keybinds_x", 0, engine.get_screen_size().x, 345)
 	local lua_re_keybinds_y = ui.add_slider_int("keybind_y", "lua_re_keybinds_y", 0, engine.get_screen_size().y, 215)
+	local lua_re_spectators_x = ui.add_slider_int("keybind_x", "lua_re_spectators_x", 0, engine.get_screen_size().x, 545)
+	local lua_re_spectators_y = ui.add_slider_int("keybind_y", "lua_re_spectators_y", 0, engine.get_screen_size().y, 215)
 
-	local types = { "always", "hold", "toggle", "disabled" }
+	local types = { "Always", "Hold", "Toggle", "Disabled" }
 
 	local function hsv2rgb(h, s, v, a)
 		local r, g, b
@@ -2395,7 +2452,9 @@ client.register_callback('create_move', deaglehit_hitscan)
 		return color_t.new(r * 255, g * 255, b * 255, a * 255)
 	end
 
-	function math.lerp(a, b, t) return a + (b - a) * t end
+	function math.lerp(a, b, t)
+		return a + (b - a) * t
+	end
 
 	local function drag(x, y, width, height, xmenu, ymenu, item)
 		local cursor = renderer.get_cursor_pos()
@@ -2439,12 +2498,14 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 
 	local item = { 0, 0, 0 }
+	local item2 = { 0, 0, 0 }
 	local animwidth = 0;
 	local alpha = { 0 }
+	local alpha_spec = { 0 }
 	local bind = {
 	["Double tap"] = {reference = ui.get_key_bind("rage_active_exploit_bind"), exploit = 2, add = 0, multiply = 0},
 	["Hide shots"] = {reference = ui.get_key_bind("rage_active_exploit_bind"), exploit = 1, add = 0, multiply = 0},
-	["Inverter"] = {reference = ui.get_key_bind("antihit_antiaim_flip_bind"), exploit = 0, add = 0, multiply = 0},
+	["Anti-Aim Inverter"] = {reference = ui.get_key_bind("antihit_antiaim_flip_bind"), exploit = 0, add = 0, multiply = 0},
 	["Auto peek"] = {reference = ui.get_key_bind("antihit_extra_autopeek_bind"), exploit = 0, add = 0, multiply = 0},
 	["Slow walk"] = {reference = ui.get_key_bind("antihit_extra_slowwalk_bind"), exploit = 0, add = 0, multiply = 0},
 	["Fake duck"] = {reference = ui.get_key_bind("antihit_extra_fakeduck_bind"), exploit = 0, add = 0, multiply = 0},
@@ -2461,11 +2522,13 @@ client.register_callback('create_move', deaglehit_hitscan)
 			auto_resize_width:set_visible(screen_ind:get_value(0))
 			style_line:set_visible(screen) chroma_dir:set_visible(style_line:get_value() == 5) color_line:set_visible(screen)
 			lua_re_keybinds_x:set_visible(false) lua_re_keybinds_y:set_visible(false)
+			lua_re_spectators_x:set_visible(false) lua_re_spectators_y:set_visible(false)
 		else
 			animation_type:set_visible(false)
 			auto_resize_width:set_visible(false)
 			style_line:set_visible(false) chroma_dir:set_visible(false) color_line:set_visible(false)
 			lua_re_keybinds_x:set_visible(false) lua_re_keybinds_y:set_visible(false)
+			lua_re_spectators_x:set_visible(false) lua_re_spectators_y:set_visible(false)
 		end
 
 		--watermark
@@ -2485,26 +2548,109 @@ client.register_callback('create_move', deaglehit_hitscan)
 				local bind_y = height + 4
 					
 				for i,v in pairs(bind) do
-					local exploits = ui.get_combo_box("rage_active_exploit"):get_value(); v.add = math.lerp(v.add, v.reference:is_active() and 255 or 0, 0.1); v.multiply = v.add > 4 and 1 or 0;
-					if v.add > 4 then if v.exploit == 0 then table.insert(keybinds, i) end; if v.exploit ~= 0 and exploits == v.exploit then table.insert(keybinds, i) end; end;
-					if v.exploit == 0 and v.reference:is_active() then table.insert(alphak, i) end; if v.exploit ~= 0 and exploits == v.exploit and v.reference:is_active() then table.insert(alphak, i) end;
+					local exploits = ui.get_combo_box("rage_active_exploit"):get_value()
+					v.add = math.lerp(v.add, v.reference:is_active() and 255 or 0, 0.1)
+					v.multiply = v.add > 4 and 1 or 0
+
+					if v.add > 4 then
+						if v.exploit == 0 then
+							table.insert(keybinds, i)
+						end
+						if v.exploit ~= 0 and exploits == v.exploit then
+							table.insert(keybinds, i)
+						end
 					end
-				if #alphak ~= 0 or ui.is_visible() then alpha[1] = math.lerp(alpha[1], 255, 0.1) end; if #alphak == 0 and not ui.is_visible() then alpha[1] = math.lerp(alpha[1], 0, 0.1) end		
-				for k,f in pairs(keybinds) do if renderer.get_text_size(fonts.verdana, 12, f .. "["..types[bind[f].reference:get_type() + 1].."]").x > maxwidth then maxwidth = renderer.get_text_size(fonts.verdana, 12, f .. "["..types[bind[f].reference:get_type() + 1].."]").x; end; end
-				if maxwidth == 0 then maxwidth = 50 end; width = width + maxwidth; if width < 130 then width = 130 end if animwidth == 0 then animwidth = width end; animwidth = math.lerp(animwidth, width, 0.1)
+					if v.exploit == 0 and v.reference:is_active() then
+						table.insert(alphak, i)
+					end
+					if v.exploit ~= 0 and exploits == v.exploit and v.reference:is_active() then
+						table.insert(alphak, i)
+					end
+				end
+
+				if #alphak ~= 0 or ui.is_visible() then
+					alpha[1] = math.lerp(alpha[1], 255, 0.1)
+				end
+				if #alphak == 0 and not ui.is_visible() then
+					alpha[1] = math.lerp(alpha[1], 0, 0.1)
+				end
+
+				for k,f in pairs(keybinds) do
+					if renderer.get_text_size(fonts.verdana, 12, f .. "["..types[bind[f].reference:get_type() + 1].."]").x > maxwidth then
+						maxwidth = renderer.get_text_size(fonts.verdana, 12, f .. "["..types[bind[f].reference:get_type() + 1].."]").x
+					end
+				end
+
+				if maxwidth == 0 then
+					maxwidth = 50
+				end
+				width = width + maxwidth
+				if width < 130 then
+					width = 130
+				end
+				if animwidth == 0 then
+					animwidth = width
+				end
+				animwidth = math.lerp(animwidth, width, 0.1)
 				w = auto_resize_width:get_value() and (animation_type:get_value() == 1 and animwidth or width) or 150
-				for k,f in pairs(keybinds) do  
-					local v = bind[f]; bind_y = bind_y + (animation_type:get_value() == 1 and 20 * (v.add / 255) or 20 * v.multiply); plus = bind_y - (animation_type:get_value() == 1 and 20 * (v.add / 255) or 20 * v.multiply);
+
+				for k,f in pairs(keybinds) do
+					local v = bind[f]
+					bind_y = bind_y + (animation_type:get_value() == 1 and 20 * (v.add / 255) or 20 * v.multiply)
+					plus = bind_y - (animation_type:get_value() == 1 and 20 * (v.add / 255) or 20 * v.multiply)
+
 					renderer.text(f, fonts.verdana, vec2_t.new(pos.x + 5, pos.y + plus + 1), 12, color_t.new(0, 0, 0, 255 * (v.add / 255)))
 					renderer.text(f, fonts.verdana, vec2_t.new(pos.x + 4, pos.y + plus), 12, color_t.new(255, 255, 255, 255 * (v.add / 255)))
 					renderer.text("["..types[v.reference:get_type() + 1].."]", fonts.verdana, vec2_t.new(pos.x + w - renderer.get_text_size(fonts.verdana, 12, "["..types[v.reference:get_type() + 1].."]").x - 3, pos.y + plus + 1), 12, color_t.new(0, 0, 0, 255 * (v.add / 255)))
 					renderer.text("["..types[v.reference:get_type() + 1].."]", fonts.verdana, vec2_t.new(pos.x + w - renderer.get_text_size(fonts.verdana, 12, "["..types[v.reference:get_type() + 1].."]").x - 4, pos.y + plus), 12, color_t.new(255, 255, 255, 255 * (v.add / 255)))
 				end
+
 				if alpha[1] > 1 then
 					filledbox(pos.x, pos.y, w, height, (alpha[1] / 255))
-					renderer.text("keybinds", fonts.verdana, vec2_t.new(pos.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2) + 1, pos.y + 3), 12, color_t.new(0, 0, 0, 255 * (alpha[1] / 255)))
-					renderer.text("keybinds", fonts.verdana, vec2_t.new(pos.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2), pos.y + 2), 12, color_t.new(255, 255, 255, 255 * (alpha[1] / 255)))
+					renderer.text("Keybinds", fonts.verdana, vec2_t.new(pos.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2) + 1, pos.y + 3), 12, color_t.new(0, 0, 0, 255 * (alpha[1] / 255)))
+					renderer.text("Keybinds", fonts.verdana, vec2_t.new(pos.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2), pos.y + 2), 12, color_t.new(255, 255, 255, 255 * (alpha[1] / 255)))
 					drag(pos.x, pos.y, w, height + 2, lua_re_keybinds_x, lua_re_keybinds_y, item)
+				end
+			end
+		end
+
+		--spectators(not work now)
+		local function watermark_spectators()
+			if screen_ind:get_value(2) and engine.is_connected() then
+				--spectators()
+
+				local pos_spec = {x = lua_re_spectators_x:get_value(), y = lua_re_spectators_y:get_value()}
+				local alphak_spec, spectators = {}, {}
+				local height_spec = 17;
+				local bind_y_spec = height_spec + 4
+
+				for i,v in pairs(names) do
+					table.insert(spectators, i)
+					table.insert(alphak_spec, i)
+				end
+
+				if #alphak_spec ~= 0 or ui.is_visible() then
+					alpha_spec[1] = math.lerp(alpha_spec[1], 255, 0.1)
+				end
+				if #alphak_spec == 0 and not ui.is_visible() then
+					alpha_spec[1] = math.lerp(alpha_spec[1], 0, 0.1)
+				end
+
+				for k,f in pairs(spectators) do
+					bind_y_spec = bind_y_spec + 12
+					plus_spec = bind_y_spec - 12
+
+					--renderer.text(f, fonts.verdana, vec2_t.new(pos_spec.x + 5, pos_spec.y + plus_spec + 1), 12, color_t.new(0, 0, 0, 255))
+					--renderer.text(f, fonts.verdana, vec2_t.new(pos_spec.x + 4, pos_spec.y + plus_spec), 12, color_t.new(255, 255, 255, 255))
+					--renderer.text("[".. modes[k] .."]", fonts.verdana, vec2_t.new(pos.x + w - renderer.get_text_size(fonts.verdana, 12, "[".. modes[k] .."]").x - 3, pos.y + plus_spec + 1), 12, color_t.new(0, 0, 0, 255 * (v_add / 255)))
+					--renderer.text("[".. modes[k] .."]", fonts.verdana, vec2_t.new(pos.x + w - renderer.get_text_size(fonts.verdana, 12, "[".. modes[k] .."]").x - 4, pos.y + plus_spec), 12, color_t.new(255, 255, 255, 255 * (v_add / 255)))
+				end
+				
+				if alpha_spec[1] > 1 then
+					filledbox(pos_spec.x, pos_spec.y, w, height_spec, (alpha_spec[1] / 255))
+					renderer.text("Spectators", fonts.verdana, vec2_t.new(pos_spec.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2) + 1, pos_spec.y + 3), 12, color_t.new(0, 0, 0, 255 * (alpha_spec[1] / 255)))
+					renderer.text("Spectators", fonts.verdana, vec2_t.new(pos_spec.x + (w /2) - (renderer.get_text_size(fonts.verdana, 12, "keybinds").x /2), pos_spec.y + 2), 12, color_t.new(255, 255, 255, 255 * (alpha_spec[1] / 255)))
+					drag(pos_spec.x, pos_spec.y, w, height_spec + 2, lua_re_spectators_x, lua_re_spectators_y, item2)
 				end
 			end
 		end
@@ -2512,6 +2658,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		if lua_re_watermark_enabled:get_value() then
 			show_watermark()
 			watermark_keybinds()
+			watermark_spectators()
 		end
 	end
 
