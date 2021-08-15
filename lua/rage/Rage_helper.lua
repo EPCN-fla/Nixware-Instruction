@@ -1336,7 +1336,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 	local fonts = {
 		verdana = renderer.setup_font('c:/windows/fonts/verdana.ttf', 12, 0),
 		verdana_watermark = renderer.setup_font('c:/windows/fonts/verdana.ttf', 13, 0),
-		tohomabd = renderer.setup_font('C:/windows/fonts/tahomabd.ttf', 30, 0)
+		tohomabd = renderer.setup_font('C:/windows/fonts/tahomabd.ttf', 22, 0)
 	}
 
 	local indicators = {}
@@ -1652,8 +1652,8 @@ client.register_callback('create_move', deaglehit_hitscan)
 	end
 
 	local function render_text(text, x, y, color)
-		renderer.text(tostring(text), fonts.tohomabd, vec2_t.new(x, y + 1), 30, color_t.new(0, 0, 0, 255))
-		renderer.text(tostring(text), fonts.tohomabd, vec2_t.new(x, y), 30, color)
+		renderer.text(tostring(text), fonts.tohomabd, vec2_t.new(x, y + 1), 22, color_t.new(0, 0, 0, 255))
+		renderer.text(tostring(text), fonts.tohomabd, vec2_t.new(x, y), 22, color)
 	end
 
 	local function render_filled_rect(x, y, w, h, color)
@@ -1692,7 +1692,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		for key, value in pairs(indicators) do
 			local addition = 6
 
-			local sizes = renderer.get_text_size(fonts.tohomabd, 30, value.text)
+			local sizes = renderer.get_text_size(fonts.tohomabd, 22, value.text)
 
 			render_text(value.text, x, h - y, value.color)
 
@@ -1700,35 +1700,35 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 			if value.Weapon then
 				local Weapon = value.Weapon
-				render_text(Weapon.value, x + 150, h - y, Weapon.color)
+				render_text(Weapon.value, x + 110, h - y, Weapon.color)
 			end
 			
 			if value.CHOKE then
 				local CHOKE = value.CHOKE
-				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 6), 30, color_t.new(0, 0, 0, 255))
-				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 5), 30, CHOKE.color)
+				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 6), 22, color_t.new(0, 0, 0, 255))
+				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 5), 22, CHOKE.color)
 			end
 
 			if value.bar then
 				local bar = value.bar
 				local fill = (sizes.x - 2) / (bar.max - bar.min) * (bar.value - bar.min)
 			
-				render_arc(x + 58, h - y + addition - 20, 12, 8, 0, 360, 50, color_t.new(0, 0, 0, 150))
-				render_arc(x + 58, h - y + addition - 20, 11.5, 8, 90, fill * 13, 50, bar.color)
+				render_arc(x + 41, h - y + addition - 15, 8, 6, 0, 360, 50, color_t.new(0, 0, 0, 150))
+				render_arc(x + 41, h - y + addition - 15, 7.8, 6, 90, fill * 20, 50, bar.color)
 			end
 
 			if value.DMG then
 				local DMG = value.DMG
 
 				if lua_re_mindmg_bind:is_active() and not lua_re_dmgoverride_bind:is_active() then
-					render_text(DMG.Value2, x + 118, h - y, DMG.color1)
-					render_text('(MinDmg)', x + 156, h - y, DMG.color2)
+					render_text(DMG.Value2, x + 83, h - y, DMG.color1)
+					render_text('(MinDmg)', x + 111, h - y, DMG.color2)
 				elseif lua_re_dmgoverride_bind:is_active() then
-					render_text(DMG.Value3, x + 118, h - y, DMG.color1)
-					render_text('(Override)', x + 156, h - y, DMG.color3)
+					render_text(DMG.Value3, x + 83, h - y, DMG.color1)
+					render_text('(Override)', x + 111, h - y, DMG.color3)
 				else
-					render_text(DMG.Value1, x + 118, h - y, DMG.color1)
-					render_text('(Default)', x + 156, h - y, DMG.color1)
+					render_text(DMG.Value1, x + 83, h - y, DMG.color1)
+					render_text('(Default)', x + 111, h - y, DMG.color1)
 				end
 			end
 
@@ -1840,7 +1840,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 		end
 	end
 	
-	if engine.is_in_game() and entitylist.get_local_player() and entitylist.get_local_player():is_alive() then
+	if entitylist.get_local_player() and entitylist.get_local_player():is_alive() then
 		fakelag_chock()
 	end
 
@@ -2317,14 +2317,14 @@ client.register_callback('create_move', deaglehit_hitscan)
 			return ffi.cast("float*", ffi.cast("int*", entity:get_address() + 0x3914)[0] + 0x334)[0] * flYawModifier
 		end
 	end
-
+	--[[
 	--Spectators
 	local m_hObserverTarget = se.get_netvar("DT_BasePlayer", "m_hObserverTarget")
 	local m_iObserverMode = se.get_netvar("DT_BasePlayer", "m_iObserverMode")
 
-	local names = { 'Not work now' }
+	local names = {}
 	local modes = {}
-	--[[
+	
 	local function get_observer_mode(mode)
 		if mode == 4 then return " ( Firstperson )"
 		elseif mode == 5 then return " ( Thirdperson )"
