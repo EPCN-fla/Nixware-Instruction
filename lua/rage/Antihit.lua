@@ -1,5 +1,6 @@
 local lua_ah_enabled = ui.add_check_box("Enable", "lua_ah_enabled", false)
-local lua_ah_pitch = ui.add_combo_box("Pitch", "lua_ah_pitch", { "None", "Down", "Zero", "Up" }, 0)
+local lua_ah_pitch = ui.add_combo_box("Pitch", "lua_ah_pitch", { "None", "Down", "Zero", "Up", "Custom" }, 0)
+local lua_ah_pitch_custom = ui.add_slider_int("Pitch value", "lua_ah_pitch_custom", -89.0, 89.0, 0.0)
 local lua_ah_yaw = ui.add_slider_int("Yaw", "lua_ah_yaw", -180.0, 180.0, 0.0)
 
 local lua_ah_manual_left = ui.add_key_bind("Manual left", "lua_ah_manual_left", 0, 1)
@@ -21,7 +22,6 @@ local lua_ah_flip_bind = ui.add_key_bind("Switch desync side", "lua_ah_flip_bind
 local lua_ah_flip_antibrute = ui.add_check_box("Anti bruteforce", "lua_ah_flip_antibrute", false)
 local lua_ah_desync_jitter = ui.add_check_box("Desync jitter", "lua_ah_desync_jitter", false)
 local lua_ah_legiaa_bind = ui.add_key_bind("Legit AA", "lua_ah_legiaa_bind", 0, 1)
-local lua_ah_pitch_onpeek = ui.add_key_bind("Zero Pitch On Peek", "lua_ah_pitch_onpeek", 0, 1)
 
 local lua_ah_alternative_desync = ui.add_combo_box("Alternative desync", "lua_ah_alternative_desync", { "None", "Anti bruteforce", "Lowdelta", "Jitter" }, 0)
 local lua_ah_desync_alternative_desync_triggers = ui.add_multi_combo_box("Alternative desync triggers", "lua_ah_desync_alternative_desync_triggers", { "In move", "In slowwalk", "On exploit" }, { false, false ,false })
@@ -31,7 +31,10 @@ local lua_ah_fakelags_max = ui.add_slider_int("Fakelags max", "lua_ah_fakelags_m
 
 local lua_ah_fakelags_on_peek = ui.add_slider_int("Fakelags on peek", "lua_ah_fakelags_on_peek", 0, 14, 0)
 
-local lua_ah_fakelags_force = ui.add_key_bind("Force fakelags", "lua_ah_fakelags_force", 0, 1)
+local lua_ah_slowwalk_override = ui.add_check_box("Slowwalk override", "lua_ah_slowwalk_override", false)
+local lua_ah_slowwalk_min = ui.add_slider_int("Slowwalk speed min", "lua_ah_slowwalk_min", 0, 100, 0)
+local lua_ah_slowwalk_max = ui.add_slider_int("Slowwalk speed max", "lua_ah_slowwalk_max", 0, 100, 0)
+
 local lua_ah_fakelags_adaptive = ui.add_check_box("Adaptive fakelags", "lua_ah_fakelags_adaptive", false)
 
 local lua_ah_rindicator = ui.add_check_box("Real indicator", "lua_ah_rindicator", false)
@@ -116,11 +119,6 @@ end
 
 function hasbit(x, p) return x % (p + p) >= p end
 
-local game_rules = ffi.cast("void***", client.find_pattern("client_panorama.dll", "8B 0D ?? ?? ?? ?? 85 C0 74 0A 8B 01 FF 50 78 83 C0 54") + 0x2)
-local function is_valve_ds()
-	return ffi.cast("bool*", ffi.cast("uintptr_t*", game_rules[0])[0] + m_bIsValveDS)[0]
-end
-
 local function server_time()
 	return (entitylist.get_local_player():get_prop_int(se.get_netvar("DT_BasePlayer", "m_nTickBase")) * globalvars.get_interval_per_tick())
 end
@@ -143,6 +141,15 @@ end
 local function is_knife()
 	local weapon = entitylist.get_entity_from_handle(entitylist.get_local_player():get_prop_int(se.get_netvar("DT_BaseCombatCharacter", "m_hActiveWeapon")))
 	if weapon_data(weapon).type == 1 then
+		return true
+	end
+	return false
+end
+local function is_ready_to_fire(cmd)
+	local isknife = is_knife()
+	if hasbit(cmd.buttons, 1) or (hasbit(cmd.buttons, 2048) and isknife) then 
+		if isknife then return true end
+		--balls
 		return true
 	end
 	return false
@@ -375,9 +382,9 @@ local function draw_indicator(angle, color)
 	local yaw = 3.1415926535898 - angle * 0.01745329251994
 	local points = 
 	{
-		get_centered_cpos(30, yaw + 0.39269908169865),
+		get_centered_cpos(40, yaw + 0.39269908169865),
 		get_centered_cpos(60, yaw),
-		get_centered_cpos(30, yaw - 0.39269908169865)
+		get_centered_cpos(40, yaw - 0.39269908169865)
 	}
 	renderer.filled_polygon(points, color)
 end
@@ -391,9 +398,23 @@ local function on_paint()
 		lua_ah_desync_custom_yaw:set_visible(false)
 		lua_ah_desync_custom_yaw_inverted:set_visible(false)
 	end
+	
+	if lua_ah_slowwalk_override:get_value() then
+		lua_ah_slowwalk_min:set_visible(true)
+		lua_ah_slowwalk_max:set_visible(true)
+	else
+		lua_ah_slowwalk_min:set_visible(false)
+		lua_ah_slowwalk_max:set_visible(false)
+	end
 
 	if lua_ah_fakelags_min:get_value() > lua_ah_fakelags_max:get_value() then
 		lua_ah_fakelags_min:set_value(lua_ah_fakelags_max:get_value())
+	end
+
+	if lua_ah_pitch:get_value() == 4 then
+		lua_ah_pitch_custom:set_visible(true)
+	else
+		lua_ah_pitch_custom:set_visible(false)
 	end
 
 	if not lua_ah_enabled:get_value() then return end
@@ -531,7 +552,7 @@ end
 
 local function get_current_desync(mod_yaw)
 	local animstate = get_animstate()
-	return math.abs(mod_yaw - math.abs(clamp_yaw(engine.get_view_angles().yaw - animstate.m_flGoalFeetYaw)))
+	return math.abs(mod_yaw - math.abs(clamp_yaw(engine.get_view_angles().yaw - animstate.m_flGoalFeetYaw))) -- CO3DAT3JIb JS REZOLVER
 end
 
 local peeked = false
@@ -543,7 +564,7 @@ local function on_create_move(cmd)
 	cmd_yaw = 0
 	if freezetime then return end
 	local local_player = entitylist.get_local_player()
-	if bit32.band(local_player:get_prop_int(m_fFlags), 64) ~= 0 then return end
+	if bit.band(local_player:get_prop_int(m_fFlags), 64) ~= 0 then return end
 	local velocity = local_player:get_prop_vector(m_vecVelocity)
 	
 	using_alternative_desync = false
@@ -583,14 +604,7 @@ local function on_create_move(cmd)
 	
 	local fakelags = lag_amount
 	if fakelags > 14 then fakelags = 14 end
-	if is_valve_ds() and fakelags > 6 then fakelags = 6 end
 	if lua_ah_fakelags_adaptive:get_value() then fakelags = fakelags * ( velocity:length() / sv_maxspeed:get_int() ) end
-	if lua_ah_fakelags_force:is_active() then 
-		fakelags = 14
-		if is_valve_ds() and fakelags > 6 then 
-			fakelags = 6
-		end
-	end
 	if fakelags < 2 and lua_ah_desync:get_value() ~= 0 then
 		fakelags = 2
 	end
@@ -603,7 +617,7 @@ local function on_create_move(cmd)
 	local move_type = local_player:get_prop_int(se.get_netvar("DT_BaseEntity", "m_nRenderMode") + 1) 
 	if move_type == 0 or move_type == 8 or move_type == 9 then return end
 	if is_nade() and is_throwing() and not is_knife() then return end
-	if hasbit(cmd.buttons, 1) or (hasbit(cmd.buttons, 2048) and is_knife()) then return end
+	if is_ready_to_fire(cmd) then return end
     if not lua_ah_legiaa_bind:is_active() and hasbit(cmd.buttons, 32) then return end
 
 	if not antihit_extra_fakeduck_bind:is_active() then
@@ -615,22 +629,16 @@ local function on_create_move(cmd)
 		end
 	end
 	
-	-- modified by Fla1337: add picth on peek
 	local pitch_type = lua_ah_pitch:get_value()
-	local pitch_type_alter = pitch_type
-	if lua_ah_pitch_onpeek:is_active() then
-		pitch_type_alter = 2
-	else
-		pitch_type_alter = pitch_type
-	end
-	
-	if pitch_type_alter == 0 then
-	elseif pitch_type_alter == 1 then
+	if pitch_type == 0 then
+	elseif pitch_type == 1 then
 		cmd.viewangles.pitch = 89.0
-	elseif pitch_type_alter == 2 then
+	elseif pitch_type == 2 then
 		cmd.viewangles.pitch = 0.0
-	elseif pitch_type_alter == 3 then
+	elseif pitch_type == 3 then
 		cmd.viewangles.pitch = -89.0
+	elseif pitch_type == 4 then
+		cmd.viewangles.pitch = lua_ah_pitch_custom:get_value()
 	end
 	
 	cmd.viewangles.yaw = engine.get_view_angles().yaw - lua_ah_yaw:get_value()
@@ -650,6 +658,10 @@ local function on_create_move(cmd)
 		if lua_ah_desync_jitter:get_value() or (lua_ah_alternative_desync:get_value() == 3 and using_alternative_desync) then
 			desync_flipped = not desync_flipped
 		end
+	end
+
+	if lua_ah_slowwalk_override:get_value() then 
+		ui.get_slider_int("antihit_extra_slowwalk_speed"):set_value( math.random( lua_ah_slowwalk_min:get_value(), lua_ah_slowwalk_max:get_value() ) )
 	end
 
 	if lua_ah_legiaa_bind:is_active() then 
@@ -726,7 +738,6 @@ local function on_create_move(cmd)
 		end
 	end
 	cmd_desync = (desync_value / math.abs(desync_value)) * 90
-
 end
 
 client.register_callback("paint", on_paint)

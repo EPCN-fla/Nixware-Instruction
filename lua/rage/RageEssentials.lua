@@ -1,6 +1,9 @@
 local lua_re_autopeek = ui.add_key_bind("autopeek", "lua_re_autopeek", 0, 1)
 local lua_re_autopeek_circle = ui.add_color_edit("autopeek circle", "lua_re_autopeek_circle", true, color_t.new(255, 255, 255, 255))
 
+lua_re_autopeek:set_visible(false)
+lua_re_autopeek_circle:set_visible(false)
+
 local lua_re_autoduck = ui.add_key_bind("autoduck", "lua_re_autoduck", 0, 1)
 local lua_re_autoduck_limit = ui.add_slider_float("autoduck limit", "lua_re_autoduck_limit", 0, 1, 0)
 
@@ -16,7 +19,9 @@ local lua_re_onshot_time = ui.add_slider_float("on shot time", "lua_re_onshot_ti
 
 local lua_re_safepoints_conditions = ui.add_multi_combo_box("force safepoints conditions", "lua_re_safepoints_conditions", { "standing", "slowwalking", "lethal" }, { false, false ,false })
 local lua_re_baim_conditions = ui.add_multi_combo_box("baim conditions", "lua_re_baim_conditions", { "standing", "slowwalking", "lethal" }, { false, false ,false })
+
 local lua_re_hs_conditions = ui.add_multi_combo_box("hs conditions", "lua_re_hs_conditions", { "in air", "in run", "on shot" }, { false, false ,false })
+lua_re_hs_conditions:set_visible(false)
 
 local lua_re_mp_head = ui.add_slider_int("multipoints head", "lua_re_mp_head", 0, 100, 0)
 local lua_re_mp_body = ui.add_slider_int("multipoints body", "lua_re_mp_body", 0, 100, 0)
@@ -31,10 +36,15 @@ local lua_re_resolver_override_bind = ui.add_key_bind("force override resolver",
 local lua_re_mindmg = ui.add_slider_int("min damage", "lua_re_mindmg", 0, 100, 0)
 local lua_re_mindmg_bind = ui.add_key_bind("force min damage", "lua_re_mindmg_bind", 0, 1)
 
-local lua_re_bt = ui.add_slider_float("backtrack", "lua_re_bt", 0, 0.2, 0)
-local lua_re_bt_onxploit = ui.add_slider_float("backtrack on exploit", "lua_re_bt_onxploit", 0, 0.2, 0)
+local lua_re_bt = ui.add_slider_float("backtrack", "lua_re_bt", 0, 0.2, 0.2)
+local lua_re_bt_onxploit = ui.add_slider_float("backtrack on exploit", "lua_re_bt_onxploit", 0, 0.2, 0.2)
 
 local lua_re_switchexploit = ui.add_key_bind("switch exploit", "lua_re_switchexploit", 0, 1)
+
+local lua_re_dt_enable = ui.add_check_box("doubletap overrides", "lua_re_dt_enable", false)
+local lua_re_dt_hitboxes = ui.add_multi_combo_box("doubletap hitboxes", "lua_re_dt_hitboxes", { "head", "chest", "pelvis", "stomach", "legs", "foot" }, { false, false, false, false, false, false })
+local lua_re_dt_safepoints = ui.add_combo_box("doubletap safepoints", "lua_re_dt_safepoints", { "default", "prefer", "force" }, 0)
+local lua_re_dt_dmg = ui.add_slider_int("doubletap min damage", "lua_re_dt_dmg", 0, 100, 0)
 
 local lua_re_jumpscout = ui.add_key_bind("jumpscout", "lua_re_jumpscout", 0, 1)
 local lua_re_jumpscout_hitboxes = ui.add_multi_combo_box("jumpscout hitboxes", "lua_re_jumpscout_hitboxes", { "head", "chest", "pelvis", "stomach", "legs", "foot" }, { false, false, false, false, false, false })
@@ -43,6 +53,12 @@ local lua_re_jumpscout_dmg = ui.add_slider_int("jumpscout damage", "lua_re_jumps
 
 local lua_re_keybinds = ui.add_check_box("keybinds", "lua_re_keybinds", false)
 local lua_re_keybinds_color = ui.add_color_edit("keybinds color", "lua_re_keybinds_color", true, color_t.new(255, 255, 255, 255))
+
+local lua_re_flame = ui.add_check_box("flame visualization", "lua_re_flame", false)
+local lua_re_flame_color = ui.add_color_edit("flame color", "lua_re_flame_color", true, color_t.new(255, 255, 255, 255))
+
+local lua_re_smoke = ui.add_check_box("smoke visualization", "lua_re_smoke", false)
+local lua_re_smoke_color = ui.add_color_edit("smoke color", "lua_re_smoke_color", true, color_t.new(255, 255, 255, 255))
 
 --
 
@@ -116,6 +132,13 @@ local m_iTeamNum = se.get_netvar("DT_BaseEntity", "m_iTeamNum")
 local m_hActiveWeapon = se.get_netvar("DT_BaseCombatCharacter", "m_hActiveWeapon")
 local m_iItemDefinitionIndex = se.get_netvar("DT_BaseAttributableItem", "m_iItemDefinitionIndex")
 local m_flDuckAmount = se.get_netvar("DT_BasePlayer", "m_flDuckAmount");
+local m_bFireIsBurning = se.get_netvar("DT_Inferno", "m_bFireIsBurning")
+local m_fireCount = se.get_netvar("DT_Inferno", "m_fireCount")
+local m_fireXDelta = se.get_netvar("DT_Inferno", "m_fireXDelta")
+local m_fireYDelta = se.get_netvar("DT_Inferno", "m_fireYDelta")
+local m_fireZDelta = se.get_netvar("DT_Inferno", "m_fireZDelta")
+local m_vecOrigin = se.get_netvar("DT_BaseEntity", "m_vecOrigin")
+local m_nSmokeEffectTickBegin = se.get_netvar("DT_SmokeGrenadeProjectile", "m_nSmokeEffectTickBegin")
 
 local sv_maxunlag = se.get_convar("sv_maxunlag")
 local sv_maxunlag_original = sv_maxunlag:get_float()
@@ -198,63 +221,66 @@ se.register_event("player_spawn")
 se.register_event("item_purchase")
 se.register_event("player_hurt")
 
-local function on_events(event)
-	if event:get_name() == "vote_cast" then
-		if lua_re_votelogs:get_value() == true then
-			local entity_id = event:get_int("entityid", 0)
-			local vote_option = vote_options[event:get_int("vote_option", 0) + 1]
-			local team = get_team_name(event:get_int("team", 0))
-			local player_info = engine.get_player_info(entity_id)
-			local line = "[Vote] [" .. team .. "] " .. tostring(player_info.name) .. " has voted " .. string.lower(tostring(vote_option)) .. "."
-			client.notify(line)
+client.register_callback("vote_cast", function(event)
+	if lua_re_votelogs:get_value() == true then
+		local entity_id = event:get_int("entityid", 0)
+		local vote_option = vote_options[event:get_int("vote_option", 0) + 1]
+		local team = get_team_name(event:get_int("team", 0))
+		local player_info = engine.get_player_info(entity_id)
+		local line = "[Vote] [" .. team .. "] " .. tostring(player_info.name) .. " has voted " .. string.lower(tostring(vote_option)) .. "."
+		client.notify(line)
+	end
+end)
+
+client.register_callback("vote_options", function(event)
+	if lua_re_votelogs:get_value() == true then
+		local size = event:get_int("count", 0)
+		vote_options = {}
+		for i = 1, size do
+			local event_name = "option" .. tostring(i)
+			table.insert(vote_options, event:get_string(event_name, "?"))
 		end
 	end
-	if event:get_name() == "vote_options" then
-		if lua_re_votelogs:get_value() == true then
-			local size = event:get_int("count", 0)
-			vote_options = {}
-			for i = 1, size do
-				local event_name = "option" .. tostring(i)
-				table.insert(vote_options, event:get_string(event_name, "?"))
-			end
-		end
-	end
-	if event:get_name() == "weapon_fire" then
-		player_shots[engine.get_player_for_user_id(event:get_int("userid", 0))] = globalvars.get_current_time()
-	end
-	if event:get_name() == "player_death" then
-		local local_player_userid = engine.get_player_info(engine.get_local_player()).user_id
-		local event_userid = event:get_int("userid", 0)
+end)
+
+client.register_callback("weapon_fire", function(event)
+	player_shots[engine.get_player_for_user_id(event:get_int("userid", 0))] = globalvars.get_current_time()
+end)
+
+client.register_callback("player_death", function(event)
+	local local_player_userid = engine.get_player_info(engine.get_local_player()).user_id
+	local event_userid = event:get_int("userid", 0)
 		
-		if local_player_userid == event_userid then 
-			autopeek_return = false
-			autopeek_pos = vec3_t.new(0, 0, 0)
-			autopeek_last_shot = 0
+	if local_player_userid == event_userid then 
+		autopeek_return = false
+		autopeek_pos = vec3_t.new(0, 0, 0)
+		autopeek_last_shot = 0
+	end
+end)
+
+client.register_callback("player_spawn", function(event)
+	local local_player_userid = engine.get_player_info(engine.get_local_player()).user_id
+	local event_userid = event:get_int("userid", 0)
+	if local_player_userid == event_userid then 
+		knifebot_target = 0
+		knifebot_attack_time = 0.0
+		autopeek_return = false
+		autopeek_pos = vec3_t.new(0, 0, 0)
+		autopeek_last_shot = 0
+	end
+end)
+
+client.register_callback("item_purchase", function(event)
+	if lua_re_buylogs:get_value() then
+		local entity_id = engine.get_player_for_user_id(event:get_int("userid", 0))
+		local lpteam = entitylist.get_local_player():get_prop_int(m_iTeamNum)
+		local entteam = entitylist.get_entity_by_index(entity_id):get_prop_int(m_iTeamNum)
+		if lpteam ~= entteam then
+			local player_name = engine.get_player_info(entity_id).name
+			client.notify("[Buy] " .. player_name .. " has bought " .. event:get_string("weapon", "") .. ".")
 		end
 	end
-	if event:get_name() == "player_spawn" then
-		local local_player_userid = engine.get_player_info(engine.get_local_player()).user_id
-		local event_userid = event:get_int("userid", 0)
-		if local_player_userid == event_userid then 
-			knifebot_target = 0
-			knifebot_attack_time = 0.0
-			autopeek_return = false
-			autopeek_pos = vec3_t.new(0, 0, 0)
-			autopeek_last_shot = 0
-		end
-	end
-	if event:get_name() == "item_purchase" then
-		if lua_re_buylogs:get_value() then
-			local entity_id = engine.get_player_for_user_id(event:get_int("userid", 0))
-			local lpteam = entitylist.get_local_player():get_prop_int(m_iTeamNum)
-			local entteam = entitylist.get_entity_by_index(entity_id):get_prop_int(m_iTeamNum)
-			if lpteam ~= entteam then
-				local player_name = engine.get_player_info(entity_id).name
-				client.notify("[Buy] " .. player_name .. " has bought " .. event:get_string("weapon", "") .. ".")
-			end
-		end
-	end
-end
+end)
 
 --
 
@@ -288,8 +314,101 @@ local exploits =
 	[2] = "double tap"
 }
 
+local smoke_radius = 125.0
+local smoke_points = 8
+
+local flame_radius = 60.0
+local flame_points = 32
+
+local function draw_flame(pos)
+    local points = { }
+    for i = 1, flame_points do
+        local item = vec3_t.new(
+            pos.x + flame_radius * math.cos(i * (360.0 / flame_points) * 0.017453),
+            pos.y + flame_radius * math.sin(i * (360.0 / flame_points) * 0.017453),
+            pos.z + 0.0
+        )
+        table.insert(points, se.world_to_screen(item))
+    end
+    renderer.filled_polygon(points, lua_re_flame_color:get_value())
+end
+
+local function draw_smoke(pos)
+    local points_up = { }
+	local points_down = { }
+    for i = 1, smoke_points do
+        local item_up = vec3_t.new(
+            pos.x + smoke_radius * math.cos(i * (360.0 / smoke_points) * 0.017453),
+            pos.y + smoke_radius * math.sin(i * (360.0 / smoke_points) * 0.017453),
+            pos.z + 120.0
+        )
+		local item_down = vec3_t.new(
+            pos.x + smoke_radius * math.cos(i * (360.0 / smoke_points) * 0.017453),
+            pos.y + smoke_radius * math.sin(i * (360.0 / smoke_points) * 0.017453),
+            pos.z + 0.0
+        )
+		table.insert(points_up, se.world_to_screen(item_up))
+        table.insert(points_down, se.world_to_screen(item_down))
+    end
+    renderer.filled_polygon(points_up, lua_re_smoke_color:get_value())
+	renderer.filled_polygon(points_down, lua_re_smoke_color:get_value())
+	for i = 1, smoke_points do
+		local points = {}
+		local bidx = i + 1
+		if bidx > smoke_points then bidx = 1 end
+		table.insert(points, points_up[i])
+		table.insert(points, points_up[bidx])
+		table.insert(points, points_down[bidx])
+		table.insert(points, points_down[i])
+		renderer.filled_polygon(points, lua_re_smoke_color:get_value())
+	end
+end
+
 local circle_points = 20.0
 local function on_paint()
+	if lua_re_flame:get_value() then
+		local infernos = entitylist.get_entities_by_class("CInferno")
+		for i=1, #infernos do
+			local inferno = infernos[i]
+			local fires = {}
+			
+			local local_player = entitylist.get_local_player()
+			local origin = inferno:get_prop_vector(m_vecOrigin)
+			local count = inferno:get_prop_int(m_fireCount)
+			
+			for j=1, count do
+				local is_burning = inferno:get_prop_bool(m_bFireIsBurning + (j - 1) * 1)
+				if is_burning then
+					local pos_x = inferno:get_prop_int(m_fireXDelta + (j - 1) * 4) + origin.x
+					local pos_y = inferno:get_prop_int(m_fireYDelta + (j - 1) * 4) + origin.y
+					local pos_z = inferno:get_prop_int(m_fireZDelta + (j - 1) * 4) + origin.z
+					if not pos_x ~= pos_x then
+						if not pos_y ~= pos_y then
+							if not pos_z ~= pos_z then
+								table.insert(fires, vec3_t.new(pos_x, pos_y, pos_z))
+							end
+						end
+					end
+				end
+			end
+			
+			for j=1, #fires do
+				draw_flame(fires[j])
+			end
+		end
+	end
+	if lua_re_smoke:get_value() then
+		local smokes = entitylist.get_entities_by_class("CSmokeGrenadeProjectile")
+		for i=1, #smokes do
+			local smoke = smokes[i]
+			local origin = smoke:get_prop_vector(m_vecOrigin)
+			local opened = smoke:get_prop_int(m_nSmokeEffectTickBegin)
+			
+			if opened ~= 0 then
+				draw_smoke(origin)
+			end
+		end
+	end
 	if autopeek_pos:length() ~= 0 then
 		local circle_radius = autopeek_accuracy
 		local points = { }
@@ -327,7 +446,11 @@ local function on_paint()
 		keybinds = keybinds .. get_keybind(lua_re_lethal_bind, "force lethal shots")
 		keybinds = keybinds .. get_keybind(lua_re_resolver_override_bind, "force resolver override")
 		if ui.get_combo_box("rage_active_exploit"):get_value() ~= 0 then
-			keybinds = keybinds .. get_keybind(ui.get_key_bind("rage_active_exploit_bind"), exploits[ui.get_combo_box("rage_active_exploit"):get_value()])
+			if ui.get_combo_box("rage_active_exploit"):get_value() == 2 and lua_re_dt_enable:get_value() then
+				keybinds = keybinds .. get_keybind(ui.get_key_bind("rage_active_exploit_bind"), exploits[ui.get_combo_box("rage_active_exploit"):get_value()] .. " (overrides)")
+			else
+				keybinds = keybinds .. get_keybind(ui.get_key_bind("rage_active_exploit_bind"), exploits[ui.get_combo_box("rage_active_exploit"):get_value()])
+			end
 		end
 		keybinds = keybinds .. get_keybind(lua_re_jumpscout, "jumpscout")
 		keybinds = keybinds .. get_keybind(ui.get_key_bind("antihit_extra_slowwalk_bind"), "slow walk")
@@ -486,6 +609,19 @@ local function essentials(cmd)
 				
 				ragebot.override_min_damage(i, lua_re_jumpscout_dmg:get_value())
 			end
+			--dt overrides
+			if lua_re_dt_enable:get_value() and ui.get_key_bind("rage_active_exploit_bind"):is_active() and ui.get_combo_box("rage_active_exploit"):get_value() == 2 then
+				ragebot.override_safe_point(i, lua_re_dt_safepoints:get_value())
+				
+				ragebot.override_hitscan(i, SCAN_HEAD, lua_re_dt_hitboxes:get_value(SCAN_HEAD))
+				ragebot.override_hitscan(i, SCAN_CHEST, lua_re_dt_hitboxes:get_value(SCAN_CHEST))
+				ragebot.override_hitscan(i, SCAN_PELVIS, lua_re_dt_hitboxes:get_value(SCAN_PELVIS))
+				ragebot.override_hitscan(i, SCAN_STOMACH, lua_re_dt_hitboxes:get_value(SCAN_STOMACH))
+				ragebot.override_hitscan(i, SCAN_LEGS, lua_re_dt_hitboxes:get_value(SCAN_LEGS))
+				ragebot.override_hitscan(i, SCAN_FOOT, lua_re_dt_hitboxes:get_value(SCAN_FOOT))
+				
+				ragebot.override_min_damage(i, lua_re_dt_dmg:get_value())
+			end
 			--binds
 			if lua_re_onshot_bind:is_active() then
 				if player_shots[i] + lua_re_onshot_time:get_value() < globalvars.get_current_time() then
@@ -496,15 +632,7 @@ local function essentials(cmd)
 					ragebot.override_hitscan(i, SCAN_LEGS, false)
 					ragebot.override_hitscan(i, SCAN_FOOT, false)
 				end
-			end
-			if lua_re_baim_bind:is_active() then
-				ragebot.override_hitscan(i, SCAN_HEAD, lua_re_baim_hitboxes:get_value(SCAN_HEAD))
-				ragebot.override_hitscan(i, SCAN_CHEST, lua_re_baim_hitboxes:get_value(SCAN_CHEST))
-				ragebot.override_hitscan(i, SCAN_PELVIS, lua_re_baim_hitboxes:get_value(SCAN_PELVIS))
-				ragebot.override_hitscan(i, SCAN_STOMACH, lua_re_baim_hitboxes:get_value(SCAN_STOMACH))
-				ragebot.override_hitscan(i, SCAN_LEGS, lua_re_baim_hitboxes:get_value(SCAN_LEGS))
-				ragebot.override_hitscan(i, SCAN_FOOT, lua_re_baim_hitboxes:get_value(SCAN_FOOT))
-			end
+			end			
 			if lua_re_safepoints_bind:is_active() then 
 				ragebot.override_safe_point(i, 2) 
 			end
@@ -520,6 +648,14 @@ local function essentials(cmd)
 			end
 			if lua_re_resolver_override_bind:is_active() then
 				ragebot.override_desync_correction(i, false)
+			end
+			if lua_re_baim_bind:is_active() then
+				ragebot.override_hitscan(i, SCAN_HEAD, lua_re_baim_hitboxes:get_value(SCAN_HEAD))
+				ragebot.override_hitscan(i, SCAN_CHEST, lua_re_baim_hitboxes:get_value(SCAN_CHEST))
+				ragebot.override_hitscan(i, SCAN_PELVIS, lua_re_baim_hitboxes:get_value(SCAN_PELVIS))
+				ragebot.override_hitscan(i, SCAN_STOMACH, lua_re_baim_hitboxes:get_value(SCAN_STOMACH))
+				ragebot.override_hitscan(i, SCAN_LEGS, lua_re_baim_hitboxes:get_value(SCAN_LEGS))
+				ragebot.override_hitscan(i, SCAN_FOOT, lua_re_baim_hitboxes:get_value(SCAN_FOOT))
 			end
 		end
 	end
@@ -629,7 +765,6 @@ local function jump_scout()
 		end
 	end
 end
-
 
 local function on_create_move(cmd)
 	essentials(cmd)
