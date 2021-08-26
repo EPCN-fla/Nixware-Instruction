@@ -1,20 +1,15 @@
+-- Made by Lunatrius & Fixed by ladro_xd ( ainzy )
 
-
-client.register_callback("fire_game_event", function(event)
-
-	if event:get_name() == "round_start" then
-    	is_round_started = true
-    end
-
-    if event:get_name() == "round_prestart" then
-		is_round_started = true
-	end
-
-	if event:get_name() == "round_freeze_end" then
-        is_round_started = false
-    end
-
+client.register_callback("round_start", function(event)
+    is_round_started = true
 end)
+
+client.register_callback("round_prestart", function(event)
+    is_round_started = true
+end)
+
+
+
 
 client.register_callback("create_move", function(cmd)
 	
