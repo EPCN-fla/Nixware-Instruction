@@ -1,3 +1,14 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+----	  ______   .___  ___.  _______   _______      ___         .______   .______        ______          __   _______   ______ .___________.		----
+----	  /  __  \  |   \/   | |   ____| /  _____|    /   \        |   _  \  |   _  \      /  __  \        |  | |   ____| /      ||           |		----
+----	 |  |  |  | |  \  /  | |  |__   |  |  __     /  ^  \       |  |_)  | |  |_)  |    |  |  |  |       |  | |  |__   |  ,----'`---|  |----`		----
+----	 |  |  |  | |  |\/|  | |   __|  |  | |_ |   /  /_\  \      |   ___/  |      /     |  |  |  | .--.  |  | |   __|  |  |         |  |     		----
+----	 |  `--'  | |  |  |  | |  |____ |  |__| |  /  _____  \     |  |      |  |\  \----.|  `--'  | |  `--'  | |  |____ |  `----.    |  |     		----
+----	  \______/  |__|  |__| |_______| \______| /__/     \__\    | _|      | _| `._____| \______/   \______/  |_______| \______|    |__|     		----
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
 --[[
     # Author: Fla1337
     # Description: Just for rage.
@@ -155,6 +166,10 @@ local lua_re_switchexploit = ui.add_key_bind("Switch Exploit", "lua_re_switchexp
 local lua_re_bt = ui.add_slider_float("Backtrack", "lua_re_bt", 0, 0.2, 0)
 local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_bt_onxploit", 0, 0.2, 0)
 
+-- Login
+local username = client.get_username()
+client.notify("Welcome back, " .. username .. "!")
+client.notify("Load successfully !")
 
 -- Rage
 
@@ -249,17 +264,11 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 				ragebot.override_min_damage(player:get_index(), lua_re_dmgoverride:get_value())
 			end
 		end
-			
+
 		if lua_re_resolver_override_bind:is_active() then
 			ui.get_check_box("rage_desync_correction"):set_value(false)
 		else
 			ui.get_check_box("rage_desync_correction"):set_value(true)
-		end
-		
-		if lua_re_pingspike_bind:is_active() then
-			ui.get_slider_int("misc_ping_spike_amount"):set_value(200)
-		else
-			ui.get_slider_int("misc_ping_spike_amount"):set_value(0)
 		end
 
 		if scale_thirdperson:get_value() then 
@@ -311,10 +320,9 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 		end
 	end
 
+	local ping_spike_amount = ui.get_slider_int("misc_ping_spike_amount")
+	local ping_spike_backup = ping_spike_amount:get_value()
 	local function ping_spike()
-		local ping_spike_amount = ui.get_slider_int("misc_ping_spike_amount")
-		local ping_spike_backup = ping_spike_amount:get_value()
-
 		if lua_re_pingspike_bind:is_active() then
 			ping_spike_amount:set_value(lua_re_pingspike:get_value())
 		else
@@ -483,14 +491,13 @@ local lua_re_bt_onxploit = ui.add_slider_float("Backtrack On Exploit", "lua_re_b
 
 	local function on_unload()
 		sv_maxunlag:set_float(sv_maxunlag_original)
-		ui.get_check_box("misc_autostrafer"):set_value(true)
 		engine.execute_client_cmd("cam_idealdist 150")
 	end
 	
 	client.register_callback("unload", on_unload)
 	client.register_callback("paint", on_paint_autopeek)
 	client.register_callback("fire_game_event", on_events)
-	client.register_callback("frame_stage_notify",thirdperson_smooth)
+	client.register_callback("frame_stage_notify", thirdperson_smooth)
 	client.register_callback("shot_fired", on_shot_fired)
 	client.register_callback("create_move", on_create_move)
 
@@ -655,7 +662,7 @@ scar_bodyscale_dt = ui.add_slider_int('Auto DT Body Scale', 'scar_bodyscale_dt',
 scar_hitchance_dt = ui.add_slider_int('Auto DT HitChance', 'scar_hitchance_dt', 0, 100, 0)
 
 auto_hitscan = ui.get_multi_combo_box("rage_auto_hitscan")
-auto_head = ui.get_slider_int("rage_auto_head_pointscale") 
+auto_head = ui.get_slider_int("rage_auto_head_pointscale")
 auto_body = ui.get_slider_int("rage_auto_body_pointscale")
 auto_sp = ui.get_combo_box("rage_auto_safepoints")
 auto_hitchance = ui.get_slider_int("rage_auto_hitchance")
@@ -1412,7 +1419,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 		local current_weapon = entitylist.get_entity_from_handle(entitylist.get_local_player():get_prop_int(m_hActiveWeapon))
 		local current_weapon_name = ffi.string(utils_get_weapon_info(current_weapon).weapon_name)
-		
+
 		return current_weapon_name
 	end
 
@@ -1442,6 +1449,13 @@ client.register_callback('create_move', deaglehit_hitscan)
 		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
 		local active_weapon = entitylist.get_entity_from_handle(handle)
 		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 32 then return false end
+		return true
+	end
+
+	local function is_M4A1_SILENCER()
+		local handle = entitylist.get_local_player():get_prop_int(m_hActiveWeapon)
+		local active_weapon = entitylist.get_entity_from_handle(handle)
+		if active_weapon:get_prop_int(m_iItemDefinitionIndex) ~= 262204 then return false end
 		return true
 	end
 
@@ -1513,7 +1527,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
 			lua_re_mindmg_value = rifle_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_m4a1' then
-			Weapon_value = 'M4A1-S'
+			Weapon_value = 'M4A4'
 			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
 			lua_re_mindmg_value = rifle_mindmg:get_value()
 		elseif get_current_weapon() == 'weapon_mac10' then
@@ -1628,6 +1642,10 @@ client.register_callback('create_move', deaglehit_hitscan)
 			Weapon_value = 'USP-S'
 			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
 			lua_re_mindmg_value = pistols_mindmg:get_value()
+		elseif is_M4A1_SILENCER() then
+			Weapon_value = 'M4A1-S'
+			lua_re_defdmg_value = ui.get_slider_int("rage_rifle_min_damage"):get_value()
+			lua_re_mindmg_value = pistols_mindmg:get_value()
 		elseif is_CZ75A() then
 			Weapon_value = 'CZ75'
 			lua_re_defdmg_value = ui.get_slider_int("rage_pistols_min_damage"):get_value()
@@ -1636,7 +1654,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			Weapon_value = 'Revolver'
 			lua_re_defdmg_value = ui.get_slider_int("rage_revolver_min_damage"):get_value()
 			lua_re_mindmg_value = revolver_mindmg:get_value()
-		elseif get_current_weapon() == 'weapon_knife' or get_current_weapon() == 'weapon_knife_t' or get_current_weapon() == 'weapon_knifegg'then
+		elseif get_current_weapon() == 'weapon_knife' or get_current_weapon() == 'weapon_knife_t' or get_current_weapon() == 'weapon_knifegg' then
 			Weapon_value = 'Knife'
 			lua_re_defdmg_value = 0
 			lua_re_mindmg_value = 0
@@ -1705,8 +1723,8 @@ client.register_callback('create_move', deaglehit_hitscan)
 			
 			if value.CHOKE then
 				local CHOKE = value.CHOKE
-				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 6), 22, color_t.new(0, 0, 0, 255))
-				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 5), 22, CHOKE.color)
+				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition + 1), 22, color_t.new(0, 0, 0, 255))
+				renderer.text(string.format('%i-%i-%i-%i-%i',CHOKE.choked5,CHOKE.choked4,CHOKE.choked3,CHOKE.choked2,CHOKE.choked1), fonts.tohomabd, vec2_t.new(x, h - y + addition), 22, CHOKE.color)
 			end
 
 			if value.bar then
@@ -1721,14 +1739,14 @@ client.register_callback('create_move', deaglehit_hitscan)
 				local DMG = value.DMG
 
 				if lua_re_mindmg_bind:is_active() and not lua_re_dmgoverride_bind:is_active() then
-					render_text(DMG.Value2, x + 83, h - y, DMG.color1)
-					render_text('(MinDmg)', x + 111, h - y, DMG.color2)
+					render_text(DMG.Value2 .. '  (MinDmg)', x + 83, h - y, DMG.color2)
+					--render_text('(MinDmg)', x + 120, h - y, DMG.color2)
 				elseif lua_re_dmgoverride_bind:is_active() then
-					render_text(DMG.Value3, x + 83, h - y, DMG.color1)
-					render_text('(Override)', x + 111, h - y, DMG.color3)
+					render_text(DMG.Value3 .. '  (Override)', x + 83, h - y, DMG.color3)
+					--render_text('(Override)', x + 120, h - y, DMG.color3)
 				else
-					render_text(DMG.Value1, x + 83, h - y, DMG.color1)
-					render_text('(Default)', x + 111, h - y, DMG.color1)
+					render_text(DMG.Value1 .. '  (Default)', x + 83, h - y, DMG.color1)
+					--render_text('(Default)', x + 120, h - y, DMG.color1)
 				end
 			end
 
@@ -1765,12 +1783,12 @@ client.register_callback('create_move', deaglehit_hitscan)
 			local time_current = math.floor(globalvars.get_tick_count())
 			local time = time_current - time_start
 
-			if time > 320 / 8 then
+			if time > 40 then
 				time_start = time_current - 1
 			end
 
 			if chocked_fl <= First_CK then
-				if time == 320 / 8 then
+				if time == 40 then
 					choked_5_backup[1] = choked_4_backup[1]
 					choked_4_backup[2] = choked_3_backup[2]
 					choked_3_backup[3] = choked_2_backup[3]
@@ -1782,7 +1800,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 					choked_4 = choked_4_backup[2]
 					choked_5 = choked_5_backup[1]
 				end
-				if time == 256 / 8 then
+				if time == 32 then
 					choked_5_backup[5] = choked_4_backup[5]
 					choked_4_backup[1] = choked_3_backup[1]
 					choked_3_backup[2] = choked_2_backup[2]
@@ -1795,7 +1813,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 					choked_4 = choked_4_backup[1]
 					choked_5 = choked_5_backup[5]
 				end
-				if time == 192 / 8 then
+				if time == 24 then
 					choked_5_backup[4] = choked_4_backup[4]
 					choked_4_backup[5] = choked_3_backup[5]
 					choked_3_backup[1] = choked_2_backup[1]
@@ -1808,7 +1826,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 					choked_4 = choked_4_backup[5]
 					choked_5 = choked_5_backup[4]
 				end
-				if time == 128 / 8 then
+				if time == 16 then
 					choked_5_backup[3] = choked_4_backup[3]
 					choked_4_backup[4] = choked_3_backup[4]
 					choked_3_backup[5] = choked_2_backup[5]
@@ -1821,7 +1839,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 					choked_4 = choked_4_backup[4]
 					choked_5 = choked_5_backup[3]
 				end
-				if time == 64 / 8 then
+				if time == 8 then
 					choked_5_backup[2] = choked_4_backup[2]
 					choked_4_backup[3] = choked_3_backup[3]
 					choked_3_backup[4] = choked_2_backup[4]
@@ -1922,8 +1940,6 @@ client.register_callback('create_move', deaglehit_hitscan)
 							}
 						}
 					end
-
-					
 
 				elseif bind.type == 'slider_int' then
 					if bind.cfg:get_value() > bind.disable_val then
@@ -2317,7 +2333,7 @@ client.register_callback('create_move', deaglehit_hitscan)
 			return ffi.cast("float*", ffi.cast("int*", entity:get_address() + 0x3914)[0] + 0x334)[0] * flYawModifier
 		end
 	end
-	--[[
+	
 	--Spectators
 	local m_hObserverTarget = se.get_netvar("DT_BasePlayer", "m_hObserverTarget")
 	local m_iObserverMode = se.get_netvar("DT_BasePlayer", "m_iObserverMode")
@@ -2333,50 +2349,48 @@ client.register_callback('create_move', deaglehit_hitscan)
 		return ""
 	end
 
-	local function table_unique(t, bArray)
-		local check = {}
-		local n = {}
-		local idx = 1
-		for k, v in pairs(t) do
-			if not check[v] then
-				if bArray then
-					n[idx] = v
-					idx = idx + 1
-				else
-					n[k] = v
+	local function table_unique(targetArray)
+		local count = 0
+		for i,v in pairs(targetArray) do
+			count = count + 1
+		end
+		for i,v in pairs(targetArray) do
+			for j = i + 1, count do
+				if v == targetArray[j] then
+					table.remove(targetArray, j)
 				end
-				check[v] = true
 			end
 		end
-		return n
 	end
 
 	local function spectators()
 		local players = entitylist.get_players(2)
-		local myself = engine.get_local_player()
 
 		for i = 1, #players do
 			local player = players[i]
 			local player_index = player:get_index()
 			local player_info = engine.get_player_info(player_index)
 
-			if player_index ~= myself then
-				if player:get_prop_int(m_iHealth) <= 0 then
-					local spec = entitylist.get_entity_from_handle(player:get_prop_int(m_hObserverTarget))
-					if spec:get_index() > 0 and spec:get_index() == myself and player:is_dormant() == false then
+			if player_index ~= engine.get_local_player() then
+				if player_info.name ~= "GOTV" and player_index ~= 1 then
+					local spec_target = entitylist.get_entity_from_handle(player:get_prop_int(m_hObserverTarget))
+					if spec_target:get_index() == entitylist.get_local_player():get_index() then
 						local mode = player:get_prop_int(m_iObserverMode)
 						local observer_mode = get_observer_mode(mode)
 
 						table.insert(names, player_info.name)
 						table.insert(modes, observer_mode)
 					end
+
+					--print(tostring(spec_target:get_index()))
+					--print(type(spec_target:get_index()))
+					--print(tostring(entitylist.get_local_player():get_index()))
+					--print(type(entitylist.get_local_player():get_index()))
 				end
 			end
-
-			table_unique(names, true)
 		end
 	end
-	]]--
+	
 	local function watermark()
 		renderer.filled_polygon({ vec2_t.new(screen.x - 360, 6), vec2_t.new(screen.x - 325, 30), vec2_t.new(screen.x - 325, 6) }, color_t.new(30,30,30,255)) --0 25 25
 		local inner_pos1, inner_pos2 = vec2_t.new(screen.x - 300, 15), vec2_t.new(screen.x - 100, 65)
@@ -2499,7 +2513,6 @@ client.register_callback('create_move', deaglehit_hitscan)
 
 	local item = { 0, 0, 0 }
 	local item2 = { 0, 0, 0 }
-	local animwidth = 0;
 	local alpha = { 0 }
 	local alpha_spec = { 0 }
 	local bind = {
@@ -2543,7 +2556,6 @@ client.register_callback('create_move', deaglehit_hitscan)
 			if screen_ind:get_value(0) and engine.is_connected() then
 				local pos = {x = lua_re_keybinds_x:get_value(), y = lua_re_keybinds_y:get_value()}
 				local alphak, keybinds = {}, {}
-				local width, maxwidth = 25, 0;
 				local height = 17;
 				local bind_y = height + 4
 					
@@ -2575,29 +2587,12 @@ client.register_callback('create_move', deaglehit_hitscan)
 					alpha[1] = math.lerp(alpha[1], 0, 0.1)
 				end
 
-				for k,f in pairs(keybinds) do
-					if renderer.get_text_size(fonts.verdana, 12, f .. "["..types[bind[f].reference:get_type() + 1].."]").x > maxwidth then
-						maxwidth = renderer.get_text_size(fonts.verdana, 12, f .. "["..types[bind[f].reference:get_type() + 1].."]").x
-					end
-				end
-
-				if maxwidth == 0 then
-					maxwidth = 50
-				end
-				width = width + maxwidth
-				if width < 130 then
-					width = 130
-				end
-				if animwidth == 0 then
-					animwidth = width
-				end
-				animwidth = math.lerp(animwidth, width, 0.1)
-				w = auto_resize_width:get_value() and (animation_type:get_value() == 1 and animwidth or width) or 150
+				w = 150
 
 				for k,f in pairs(keybinds) do
 					local v = bind[f]
-					bind_y = bind_y + (animation_type:get_value() == 1 and 20 * (v.add / 255) or 20 * v.multiply)
-					plus = bind_y - (animation_type:get_value() == 1 and 20 * (v.add / 255) or 20 * v.multiply)
+					bind_y = bind_y + 20 * (v.add / 255)
+					plus = bind_y - 20 * (v.add / 255)
 
 					renderer.text(f, fonts.verdana, vec2_t.new(pos.x + 5, pos.y + plus + 1), 12, color_t.new(0, 0, 0, 255 * (v.add / 255)))
 					renderer.text(f, fonts.verdana, vec2_t.new(pos.x + 4, pos.y + plus), 12, color_t.new(255, 255, 255, 255 * (v.add / 255)))
@@ -2614,19 +2609,18 @@ client.register_callback('create_move', deaglehit_hitscan)
 			end
 		end
 
-		--spectators(not work now)
+		--spectators
 		local function watermark_spectators()
 			if screen_ind:get_value(2) and engine.is_connected() then
-				--spectators()
+				table_unique(names)
 
 				local pos_spec = {x = lua_re_spectators_x:get_value(), y = lua_re_spectators_y:get_value()}
-				local alphak_spec, spectators = {}, {}
+				local alphak_spec = {}
 				local height_spec = 17;
 				local bind_y_spec = height_spec + 4
 
 				for i,v in pairs(names) do
-					table.insert(spectators, i)
-					table.insert(alphak_spec, i)
+					table.insert(alphak_spec, v)
 				end
 
 				if #alphak_spec ~= 0 or ui.is_visible() then
@@ -2636,12 +2630,12 @@ client.register_callback('create_move', deaglehit_hitscan)
 					alpha_spec[1] = math.lerp(alpha_spec[1], 0, 0.1)
 				end
 
-				for k,f in pairs(spectators) do
+				for k,f in pairs(names) do
 					bind_y_spec = bind_y_spec + 12
 					plus_spec = bind_y_spec - 12
 
-					--renderer.text(f, fonts.verdana, vec2_t.new(pos_spec.x + 5, pos_spec.y + plus_spec + 1), 12, color_t.new(0, 0, 0, 255))
-					--renderer.text(f, fonts.verdana, vec2_t.new(pos_spec.x + 4, pos_spec.y + plus_spec), 12, color_t.new(255, 255, 255, 255))
+					renderer.text(f, fonts.verdana, vec2_t.new(pos_spec.x + 5, pos_spec.y + plus_spec + 1), 12, color_t.new(0, 0, 0, 255))
+					renderer.text(f, fonts.verdana, vec2_t.new(pos_spec.x + 4, pos_spec.y + plus_spec), 12, color_t.new(255, 255, 255, 255))
 					--renderer.text("[".. modes[k] .."]", fonts.verdana, vec2_t.new(pos.x + w - renderer.get_text_size(fonts.verdana, 12, "[".. modes[k] .."]").x - 3, pos.y + plus_spec + 1), 12, color_t.new(0, 0, 0, 255 * (v_add / 255)))
 					--renderer.text("[".. modes[k] .."]", fonts.verdana, vec2_t.new(pos.x + w - renderer.get_text_size(fonts.verdana, 12, "[".. modes[k] .."]").x - 4, pos.y + plus_spec), 12, color_t.new(255, 255, 255, 255 * (v_add / 255)))
 				end
@@ -2662,7 +2656,11 @@ client.register_callback('create_move', deaglehit_hitscan)
 		end
 	end
 
+	client.register_callback("round_start", function(event)
+		names = {}
+	end)
 
+	client.register_callback("create_move", spectators)
 	client.register_callback("create_move", get_current_weapon)
 	client.register_callback("create_move", show_current_weapon)
 	client.register_callback("create_move", fakelag_chock)
