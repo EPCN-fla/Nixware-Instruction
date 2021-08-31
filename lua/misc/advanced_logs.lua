@@ -22,8 +22,8 @@ c_print_chat.get_vfunc = function(ptr, typedef, index)
 	return ffi.cast( typedef, ffi.cast( "void***", ptr )[0][index])
 end
 
-c_print_chat.this = ffi.cast( "unsigned long**", client.find_pattern( "client_panorama.dll", "B9 ? ? ? ? E8 ? ? ? ? 8B 5D 08" ) + 1 )[0]
-c_print_chat.find_hud_element = ffi.cast( "unsigned long(__thiscall*)(void*, const char*)", client.find_pattern( "client_panorama.dll", "55 8B EC 53 8B 5D 08 56 57 8B F9 33 F6 39 77 28" ) )
+c_print_chat.this = ffi.cast( "unsigned long**", client.find_pattern( "client.dll", "B9 ? ? ? ? E8 ? ? ? ? 8B 5D 08" ) + 1 )[0]
+c_print_chat.find_hud_element = ffi.cast( "unsigned long(__thiscall*)(void*, const char*)", client.find_pattern( "client.dll", "55 8B EC 53 8B 5D 08 56 57 8B F9 33 F6 39 77 28" ) )
 c_print_chat.hud_chat = c_print_chat.find_hud_element( c_print_chat.this, "CHudChat" )
 c_print_chat.chat_print = c_print_chat.get_vfunc( c_print_chat.hud_chat, "void(__cdecl*)(int, int, int, const char*, ...)", 27 )
 
