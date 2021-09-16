@@ -18,7 +18,6 @@
 * 更新使用手册
 * 收集论坛上的lua
 * 尝试修复部分损坏的lua
-* 编写新lua（例如枪口指示器等）
 
 # 贡献者
 **[Fla1337](https://github.com/EPCN-fla)**
