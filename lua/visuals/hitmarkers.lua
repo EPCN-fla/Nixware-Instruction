@@ -82,50 +82,55 @@ local function GetClosestImpact(point)
     return bulletImpactPositions[bestImpactIndex];
 end
 
-local function hFireGameEvent(GameEvent)
+client.register_callback("bullet_impact", function(GameEvent)
     -- local
     local local_player = engine.get_local_player()
     local pLocal = entitylist.get_entity_by_index(local_player)
-	
+
     if pLocal:get_prop_int(m_iHealth) < 1 then
         return
     end
 
-    if (GameEvent:get_name() == "bullet_impact") then
-        local attacker = engine.get_player_for_user_id(GameEvent:get_int("userid", 0));
-        if attacker ~= nil and attacker == pLocal:get_index() then
-            hitFlag = true;
-            local hitPos = vec3_t.new(GameEvent:get_float("x", 0), GameEvent:get_float("y", 0), GameEvent:get_float("z", 0));
-            table.insert(bulletImpactPositions, hitPos);
-            bulletImpactCount = bulletImpactCount + 1;
-        end
+    local attacker = engine.get_player_for_user_id(GameEvent:get_int("userid", 0));
+    if attacker ~= nil and attacker == pLocal:get_index() then
+        hitFlag = true;
+        local hitPos = vec3_t.new(GameEvent:get_float("x", 0), GameEvent:get_float("y", 0), GameEvent:get_float("z", 0));
+        table.insert(bulletImpactPositions, hitPos);
+        bulletImpactCount = bulletImpactCount + 1;
+    end
+end)
 
-    elseif (GameEvent:get_name() == "player_hurt") then
-        local victim = engine.get_player_for_user_id(GameEvent:get_int("userid", 0));
-        local attacker = engine.get_player_for_user_id(GameEvent:get_int("attacker", 0));
-        if (attacker ~= nil and victim ~= nil and attacker == pLocal:get_index()) then
-            local hitGroup = GameEvent:get_int("hitgroup", 0);
-            if (hitFlag) then
-                hitFlag = false;
-                local vic = entitylist.get_entity_by_index(victim)
-                local hitboxPos = vic:get_player_hitbox_pos(hitGroup)
-                local impact = GetClosestImpact(hitboxPos);
+client.register_callback("player_hurt", function(GameEvent)
+    local local_player = engine.get_local_player()
+    local pLocal = entitylist.get_entity_by_index(local_player)
 
-                AddHit(impact, 0);
+    if pLocal:get_prop_int(m_iHealth) < 1 then
+        return
+    end
 
-				
-                bulletImpactPositions = {};
-                bulletImpactCount = 0;
-                if lua_hitmarker_dmg:get_value() then
-                   local damage = "-" .. tostring(GameEvent:get_int("dmg_health", 0)) .. "HP";
-                   table.insert(dmgArr, damage);
-                end
+    local victim = engine.get_player_for_user_id(GameEvent:get_int("userid", 0));
+    local attacker = engine.get_player_for_user_id(GameEvent:get_int("attacker", 0));
+    if (attacker ~= nil and victim ~= nil and attacker == pLocal:get_index()) then
+        local hitGroup = GameEvent:get_int("hitgroup", 0);
+        if (hitFlag) then
+            hitFlag = false;
+            local vic = entitylist.get_entity_by_index(victim)
+            local hitboxPos = vic:get_player_hitbox_pos(hitGroup)
+            local impact = GetClosestImpact(hitboxPos);
+
+            AddHit(impact, 0);
+
+            bulletImpactPositions = {};
+            bulletImpactCount = 0;
+            if lua_hitmarker_dmg:get_value() then
+                local damage = "-" .. tostring(GameEvent:get_int("dmg_health", 0)) .. "HP";
+                table.insert(dmgArr, damage);
             end
         end
     end
-end
+end)
 
-local function hDraw()  
+local function hDraw()
     -- local
     local local_player = engine.get_local_player()
     local pLocal = entitylist.get_entity_by_index(local_player)
@@ -206,5 +211,4 @@ end
 
 
 -- callbacks
-client.register_callback("fire_game_event", hFireGameEvent);
 client.register_callback("paint", hDraw);
