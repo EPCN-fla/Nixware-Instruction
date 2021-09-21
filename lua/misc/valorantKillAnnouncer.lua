@@ -83,43 +83,46 @@ function SetScriptDataToDefault()
     totalkills = 0
 end
 
-client.register_callback("fire_game_event", function(event)
+client.register_callback("round_start", function()
+    SetScriptDataToDefault()
+end)
+
+client.register_callback("client_disconnect", function()
+    SetScriptDataToDefault()
+end)
+
+client.register_callback("player_connect_full", function()
+    SetScriptDataToDefault()
+end)
+
+client.register_callback("player_death", function(event)
 
     if announcer_enabled:get_value() == false then return end
 
+    local attacker = engine.get_player_for_user_id(event:get_int("attacker", 0))
+    local dead = engine.get_player_for_user_id(event:get_int("userid", 0))
 
-    if event:get_name() == "client_disconnect" or event:get_name() == "player_connect_full" or event:get_name() == "round_start" then
+    local player = engine.get_local_player()
 
-        SetScriptDataToDefault()
+    if attacker == player and player ~= dead then
+
+        DropFramesData()
+
+        if totalkills < #killtypes then
+            totalkills = totalkills + 1
+        end
+
+        if announcer_sound_enabled:get_value() then
+
+            engine.execute_client_cmd("play " .. "../../nix/valorant/" .. killtypes[totalkills]["prefix"] .. ".wav")
+        end
+        
+        startanimate = true
     end
 
-    if event:get_name() == "player_death" then
+    if player == dead then
 
-        local attacker = engine.get_player_for_user_id(event:get_int("attacker", 0))
-        local dead = engine.get_player_for_user_id(event:get_int("userid", 0))
-
-        local player = engine.get_local_player()
-
-        if attacker == player and player ~= dead then
-
-            DropFramesData()
-
-            if totalkills < #killtypes then
-                totalkills = totalkills + 1
-            end
-
-            if announcer_sound_enabled:get_value() then
-
-                engine.execute_client_cmd("play " .. "../../nix/valorant/" .. killtypes[totalkills]["prefix"] .. ".wav")
-            end
-            
-            startanimate = true
-        end
-
-        if player == dead then
-
-            SetScriptDataToDefault()
-        end
+        SetScriptDataToDefault()
     end
 end)
 
