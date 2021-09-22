@@ -8,6 +8,7 @@ local lua_ah_manual_back = ui.add_key_bind("Manual backward", "lua_ah_manual_bac
 local lua_ah_manual_right = ui.add_key_bind("Manual right", "lua_ah_manual_right", 0, 1)
 
 local lua_ah_jitter_yaw = ui.add_slider_float("Jitter", "lua_ah_jitter_yaw", 0.0, 60.0, 0.0)
+local lua_ah_spin_speed = ui.add_slider_float("Spin speed", "lua_ah_spin_speed", 0.0, 60.0, 0.0)
 
 local lua_ah_at_targets = ui.add_key_bind("At targets", "lua_ah_at_targets", 0, 1)
 local lua_ah_at_targets_mode = ui.add_combo_box("At targets type", "lua_ah_at_targets_mode", { "Crosshair", "Distance" }, 0)
@@ -541,7 +542,7 @@ ffi.cdef[[
 
 local function get_animstate()
 	local entity = entitylist.get_local_player()
-    return ffi.cast("struct Animstate_t**", entity:get_address() + 0x3914)[0]
+    return ffi.cast("struct Animstate_t**", entity:get_address() + 0x9960)[0]
 end
 
 local function clamp_yaw(yaw)
@@ -558,6 +559,7 @@ end
 local peeked = false
 
 local lag_amount = 0
+local spin = 0
 
 local function on_create_move(cmd)
 	if not lua_ah_enabled:get_value() then return end
@@ -649,6 +651,12 @@ local function on_create_move(cmd)
 	if manual_side == 1 then cmd.viewangles.yaw = engine.get_view_angles().yaw - 270.0 end
 	if manual_side == 2 then cmd.viewangles.yaw = engine.get_view_angles().yaw - 180.0 end
 	if manual_side == 3 then cmd.viewangles.yaw = engine.get_view_angles().yaw - 90.0 end
+	
+	if lua_ah_spin_speed:get_value() ~= 0 then
+		spin = spin + lua_ah_spin_speed:get_value()
+		if spin > 360 then spin = 0 end
+		cmd.viewangles.yaw = cmd.viewangles.yaw + spin
+	end
 	
 	cmd_yaw = engine.get_view_angles().yaw - cmd.viewangles.yaw
 	
