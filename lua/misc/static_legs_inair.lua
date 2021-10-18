@@ -1,3 +1,7 @@
+--[[
+    Fixed Currently By Fla1337.
+]]--
+
 ffi.cdef[[
     typedef uintptr_t (__thiscall* GetClientEntity_4242425_t)(void*, int);
 
@@ -72,6 +76,7 @@ local ffi_helpers = {
     end
 }
 
+local offset_value = 0x9960
 local shared_onground
 
 client.register_callback("paint", function()
@@ -81,9 +86,9 @@ client.register_callback("paint", function()
 
     local bOnGround = bit.band(localplayer:get_prop_float(m_fFlags), bit.lshift(1,0)) ~= 0
     if not bOnGround then
-        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + 14612)[0].flDurationInAir = 99
-        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + 14612)[0].flHitGroundCycle = 0
-        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + 14612)[0].bHitGroundAnimation = false
+        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + offset_value)[0].flDurationInAir = 99
+        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + offset_value)[0].flHitGroundCycle = 0
+        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + offset_value)[0].bHitGroundAnimation = false
     end
 
     shared_onground = bOnGround
@@ -97,6 +102,6 @@ client.register_callback("paint", function()
 
     local bOnGround = bit.band(localplayer:get_prop_float(m_fFlags), bit.lshift(1,0)) ~= 0
     if bOnGround and not shared_onground then 
-        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + 14612)[0].flDurationInAir = 0.5 
+        ffi.cast("CCSGOPlayerAnimationState_534535_t**", ffi_helpers.get_entity_address(localplayer:get_index()) + offset_value)[0].flDurationInAir = 0.5
     end -- ACT_CSGO_LAND_LIGHT
 end)

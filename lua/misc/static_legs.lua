@@ -1,4 +1,8 @@
-local ffi = require"ffi"
+--[[
+    Fixed Forever By Fla1337.
+]]--
+
+local ffi = require "ffi"
 
 ffi.cdef[[
     typedef uintptr_t (__thiscall* GetClientEntity_4242425_t)(void*, int);
@@ -14,10 +18,13 @@ local ffi_helpers = {
     end
 }
 
+local m_flPoseParameter = se.get_netvar("DT_BaseAnimating", "m_flPoseParameter")
+
 client.register_callback("paint", function()
     local localplayer = entitylist.get_local_player()
 	if not localplayer then return end
-    ffi.cast("float*", ffi_helpers.get_entity_address(localplayer:get_index()) + 10100)[0] = 0
+    ffi.cast("float*", ffi_helpers.get_entity_address(localplayer:get_index()) + m_flPoseParameter)[0] = 0
+
     local antihit_extra_leg_movement = ui.get_combo_box("antihit_extra_leg_movement")
     if clientstate.get_choked_commands() == 0 then
         antihit_extra_leg_movement:set_value(2)
