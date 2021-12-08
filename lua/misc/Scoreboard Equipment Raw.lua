@@ -12,8 +12,8 @@
 --[[
     # Author: Fla1337
     # Description: The Scoreboard Equipment Lua For Nixware.
-    # Version: 1.0
-    # Update Time: 2021.12.7
+    # Version: 1.1
+    # Update Time: 2021.12.8
 --]]
 
 local ffi = require("ffi")
@@ -467,8 +467,10 @@ function GetWeaponTypeValue(weapon_name)
         return 9
     elseif weapon_name == "smokegrenade" then
         return 10
-    else
+    elseif weapon_name == "defuser" then
         return 11
+    else
+        return 12
     end
 end
 -------------------------------- Weapon End ------------------------------------
@@ -982,61 +984,16 @@ end
 
 local panel_start = false
 local PlayerInfoGroup = {}
-function GetPlayerInfo()
-	if not engine.is_connected() or not engine.is_in_game() or not entitylist.get_local_player() or not entitylist.get_local_player():is_alive() then
-		PlayerInfoGroup = {}
-		return
-	end
-
-    local free_kevlar = convars_group.mp_free_armor:get_int() > 0
-	local free_helmet = convars_group.mp_free_armor:get_int() > 1
-	local free_defuser = convars_group.mp_defuser_allocation:get_int() >= 2
-
-	local players = entitylist.get_players(2)
-    for i = 1, #players do
-        local player = players[i]
-        local player_index = player:get_index()
-
-		if PlayerInfoGroup[player_index] == nil then -- Define
-            PlayerInfoGroup[player_index] = {}
-        end
-
-        if PlayerInfoGroup[player_index].weapons == nil then -- Define
-            PlayerInfoGroup[player_index].weapons = {}
-        end
-
-        local current_weapon_name = GetWeaponInfo("console_name", GetWeaponIndex(player)):gsub("item_", ""):gsub("weapon_", "")
-        if not table_contains(PlayerInfoGroup[player_index].weapons, current_weapon_name) then
-            table.insert(PlayerInfoGroup[player_index].weapons, current_weapon_name)
-        end
-        PlayerInfoGroup[player_index].current_weapon = current_weapon_name
-
-        if player:get_prop_int(netvars_group.m_ArmorValue) > 0 then
-            if player:get_prop_bool(netvars_group.m_bHasHelmet) then
-                if not free_helmet then
-                    PlayerInfoGroup[player_index].armor = "helmet"
-                end
-            elseif not free_kevlar then
-                PlayerInfoGroup[player_index].armor = "kevlar"
-            end
-        else
-            PlayerInfoGroup[player_index].armor = "null"
-        end
-	end
-end
 
 function UpdatePlayer(index)
-    if not panel_start then
-        panorama.loadstring(js_string.main_body..js_string.create_panel)
-        panel_start = true
-    end
+    if not panel_start or PlayerInfoGroup[index] == nil then return end
 
     table.sort(PlayerInfoGroup[index].weapons, sort_weapons_func)
 
     local player_index = LuaToJs(index)
     local player_weapon_group = LuaToJs(PlayerInfoGroup[index].weapons)
     local player_current_weapon = LuaToJs(PlayerInfoGroup[index].current_weapon)
-    local player_armor = PlayerInfoGroup[index].armor
+    local player_armor = PlayerInfoGroup[index].armor ~= nil and PlayerInfoGroup[index].armor or "null"
 
     local update_player_info
     if player_armor ~= "null" then
@@ -1049,26 +1006,33 @@ end
 
 local events_start_time = {
     ["on_item_equip"] = globalvars.get_current_time(),
-    ["round_freeze_end"] = false,
+    ["tab_enable"] = globalvars.get_current_time(),
 }
 local events_index = {
     ["on_item_equip"] = 0,
 }
 
 function TimerListener()
+    if not engine.is_connected() or not engine.is_in_game() or not entitylist.get_local_player() or not entitylist.get_local_player():is_alive() then
+		PlayerInfoGroup = {}
+		return
+	end
+
     if globalvars.get_current_time() - events_start_time["on_item_equip"] < 0.01 then
         UpdatePlayer(events_index["on_item_equip"])
     end
 
-    if events_start_time["round_freeze_end"] then
-        local players = entitylist.get_players(2)
-        for index = 1, #players do
-            if PlayerInfoGroup[index] ~= nil then
-                UpdatePlayer(index)
-            end
+    if client.is_key_clicked(0x09) then -- Tab
+        if not panel_start then
+            events_start_time["tab_enable"] = globalvars.get_current_time()
         end
+    end
 
-        events_start_time["round_freeze_end"] = false
+    if globalvars.get_current_time() - events_start_time["tab_enable"] < 0.5 then
+        if not panel_start then
+            panorama.loadstring(js_string.main_body..js_string.create_panel)
+            panel_start = true
+        end
     end
 end
 
@@ -1085,6 +1049,14 @@ function on_player_spawn(event)
     local event_userid = event:get_int("userid", 0)
 	local player_index = engine.get_player_for_user_id(event_userid)
 
+    if PlayerInfoGroup[player_index] == nil then -- Define
+        PlayerInfoGroup[player_index] = {}
+    end
+
+    if PlayerInfoGroup[player_index].weapons == nil then -- Define
+        PlayerInfoGroup[player_index].weapons = {}
+    end
+
 	UpdatePlayer(player_index)
 end
 
@@ -1098,7 +1070,6 @@ function on_item_remove(event)
     if weapon_name ~= 'assaultsuit' and weapon_name ~= 'kevlar' and weapon_name ~= 'defuser' then
         if PlayerInfoGroup[player_index].weapons ~= nil then
             table_remove_item(PlayerInfoGroup[player_index].weapons, weapon_name)
-
             UpdatePlayer(player_index)
         end
     end
@@ -1111,7 +1082,21 @@ function on_item_pickup(event)
     local event_defindex = event:get_int("defindex", 0)
     local weapon_name = GetWeaponInfo("console_name", event_defindex):gsub("item_", ""):gsub("weapon_", "")
 
-    if weapon_name ~= 'assaultsuit' and weapon_name ~= 'kevlar' and weapon_name ~= 'defuser' then
+    local free_kevlar = convars_group.mp_free_armor:get_int() > 0
+	local free_helmet = convars_group.mp_free_armor:get_int() > 1
+	local free_defuser = convars_group.mp_defuser_allocation:get_int() >= 2
+
+    if weapon_name == 'assaultsuit' or weapon_name == 'kevlar' then
+        if weapon_name == "kevlar" then
+            if not free_helmet and PlayerInfoGroup[player_index].armor == nil then
+                PlayerInfoGroup[player_index].armor = "kevlar"
+            end
+        elseif not free_kevlar then
+            PlayerInfoGroup[player_index].armor = "helmet"
+        end
+    elseif weapon_name == 'defuser' and free_defuser then
+        return
+    else
         if not table_contains(PlayerInfoGroup[player_index].weapons, weapon_name) then
             table.insert(PlayerInfoGroup[player_index].weapons, weapon_name)
         end
@@ -1124,6 +1109,30 @@ function on_item_equip(event)
     local event_userid = event:get_int("userid", 0)
 	local player_index = engine.get_player_for_user_id(event_userid)
 
+    local event_defindex = event:get_int("defindex", 0)
+    local weapon_name = GetWeaponInfo("console_name", event_defindex):gsub("item_", ""):gsub("weapon_", "")
+
+    if not table_contains(PlayerInfoGroup[player_index].weapons, weapon_name) then
+        table.insert(PlayerInfoGroup[player_index].weapons, weapon_name)
+    end
+    PlayerInfoGroup[player_index].current_weapon = weapon_name
+
+    local free_kevlar = convars_group.mp_free_armor:get_int() > 0
+	local free_helmet = convars_group.mp_free_armor:get_int() > 1
+
+    local player = entitylist.get_entity_by_index(player_index)
+    if player:get_prop_int(netvars_group.m_ArmorValue) > 0 then
+        if player:get_prop_bool(netvars_group.m_bHasHelmet) then
+            if not free_helmet then
+                PlayerInfoGroup[player_index].armor = "helmet"
+            end
+        elseif not free_kevlar then
+            PlayerInfoGroup[player_index].armor = "kevlar"
+        end
+    else
+        PlayerInfoGroup[player_index].armor = nil
+    end
+
     events_start_time["on_item_equip"] = globalvars.get_current_time()
     events_index["on_item_equip"] = player_index
 end
@@ -1135,21 +1144,28 @@ function on_item_purchase(event)
     local weapon = event:get_string("weapon", "")
     local weapon_name = weapon:gsub("item_", ""):gsub("weapon_", "")
 
-    if weapon_name ~= 'assaultsuit' and weapon_name ~= 'kevlar' and weapon_name ~= 'defuser' then
-        if not table_contains(PlayerInfoGroup[player_index].weapons, weapon_name) then
-		    table.insert(PlayerInfoGroup[player_index].weapons, weapon_name)
+    local free_kevlar = convars_group.mp_free_armor:get_int() > 0
+	local free_helmet = convars_group.mp_free_armor:get_int() > 1
+    local free_defuser = convars_group.mp_defuser_allocation:get_int() >= 2
 
-            UpdatePlayer(player_index)
+    if weapon_name == 'assaultsuit' or weapon_name == 'kevlar' then
+        if weapon_name == "kevlar" then
+            if not free_helmet and PlayerInfoGroup[player_index].armor == nil then
+                PlayerInfoGroup[player_index].armor = "kevlar"
+            end
+        elseif not free_kevlar then
+            PlayerInfoGroup[player_index].armor = "helmet"
         end
-	end
-end
-
-function on_round_freeze_end()
-    events_start_time["round_freeze_end"] = true
+    elseif weapon_name == 'defuser' and free_defuser then
+        return
+    else
+        if not table_contains(PlayerInfoGroup[player_index].weapons, weapon_name) then
+            table.insert(PlayerInfoGroup[player_index].weapons, weapon_name)
+        end
+    end
 end
 
 -----> Callbacks
-client.register_callback("paint", GetPlayerInfo)
 client.register_callback("paint", TimerListener)
 
 client.register_callback("player_death", on_player_death)
@@ -1158,7 +1174,6 @@ client.register_callback("item_remove", on_item_remove)
 client.register_callback("item_pickup", on_item_pickup)
 client.register_callback("item_equip", on_item_equip)
 client.register_callback("item_purchase", on_item_purchase)
-client.register_callback("round_freeze_end", on_round_freeze_end)
 
 client.register_callback("unload", function()
     panorama.loadstring(js_string.destroy_panel)
